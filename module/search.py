@@ -8,13 +8,18 @@ from collections import namedtuple
 class Search:
     def __init__(self, config, model, tokenizer):
         super(Search, self).__init__()
+        
         self.beam_size = 4
         self.model = model
+        self.task = config.task
+
         self.tokenizer = tokenizer
         self.device = config.device
+
         self.bos_id = config.bos_id
         self.eos_id = config.eos_id
         self.pad_id = config.pad_id
+        
         self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'hidden', 'length'])
 
 
@@ -45,18 +50,25 @@ class Search:
 
         for _ in range(self.beam_size):
             nodes.put((0, start_node))        
+
         return Node, nodes, [], []    
 
 
     def get_input_params(self, input_seq):
         input_tokens = self.tokenizer.encode(input_seq)
         input_tensor = torch.LongTensor([input_tokens]).to(self.device)
-        max_len = len(input_tokens) + 30
+
+        if self.task != 'sum':
+            max_len = len(input_tokens) + 30
+        else:
+            max_len = 500
+            
         max_repeat = max([input_tokens.count(token) for token in input_tokens if token != self.pad_id])
+        
         return input_tensor, max_len, max_repeat        
 
 
-    def beam_search(self, input_seq, topk=1):
+    def beam_search(self, input_seq):
         input_tensor, max_len, max_repeat = self.get_input_params(input_seq)
         
         hidden = self.model.encoder(input_tensor)

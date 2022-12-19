@@ -26,6 +26,7 @@ class Dataset(torch.utils.data.Dataset):
         return src, trg
 
 
+
 def load_dataloader(config, split):
     global pad_id
     pad_id = config.pad_id    
@@ -85,12 +86,14 @@ def load_dataloader(config, split):
         return {'src': src_batch, 
                 'trg': trg_batch}
 
+
     if config.task == 'sum':
         return DataLoader(Dataset(config.task, split), 
                           batch_size=config.batch_size, 
                           shuffle=True, 
                           collate_fn=sum_collate,
                           num_workers=2)
+
 
     return DataLoader(Dataset(config.task, split), 
                       batch_size=config.batch_size, 

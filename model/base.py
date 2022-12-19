@@ -49,9 +49,9 @@ class Decoder(nn.Module):
 
 
 
-class Seq2Seq(nn.Module):
+class BaseModel(nn.Module):
     def __init__(self, config):
-        super(Seq2Seq, self).__init__()
+        super(BaseModel, self).__init__()
 
         self.device = config.device
         self.vocab_size = config.vocab_size

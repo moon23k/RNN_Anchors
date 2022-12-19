@@ -1,6 +1,6 @@
 import numpy as np
 import sentencepiece as spm
-import os, yaml, random, argparse
+import os, yaml, random, argparse, nltk
 
 import torch
 import torch.nn as nn
@@ -15,8 +15,6 @@ from module.train import Trainer
 from module.search import Search
 
 
-
-
 def set_seed(SEED=42):
     random.seed(SEED)
     np.random.seed(SEED)
@@ -27,13 +25,13 @@ def set_seed(SEED=42):
     cudnn.deterministic = True
 
 
-
 class Config(object):
     def __init__(self, args):    
         self.task = args.task
         self.mode = args.mode
-        self.iters_to_accumulate = 4
         self.ckpt = f"ckpt/{self.task}.pt"
+
+        self.iters_to_accumulate = 4
 
         use_cuda = torch.cuda.is_available()
         if use_cuda:
@@ -60,7 +58,6 @@ class Config(object):
             print(f"* {attribute}: {value}")
 
 
-
 def load_tokenizer(task):
     tokenizer = spm.SentencePieceProcessor()
     tokenizer.load(f'data/{task}/spm.model')
@@ -68,25 +65,31 @@ def load_tokenizer(task):
     return tokenizer
 
 
-
 def inference(config, model, tokenizer):
-    model.eval()
+    if config.task == 'sum':
+        nltk.download('punkt')
+
     search_module = Search(config, model, tokenizer)
 
     print(f'--- Inference Process Started! ---')
     print('[ Type "quit" on user input to stop the Process ]')
     
     while True:
-        input_seq = input('\nUser Input Sequence >> ')
-        if input_seq.lower() == 'quit':
+        input_seq = input('\nUser Input Sequence >> ').lower()
+
+        #Enc Condition
+        if input_seq == 'quit':
             print('\n--- Inference Process has terminated! ---')
             break        
+
+        if config.task == 'sum':
+            input_seq = nltk.tokenize.sent_tokenize(input_seq)
+
         if config.search_method == 'beam':
             output_seq = search_module.beam_search(input_seq)
         else:
             output_seq = search_module.greedy_search(input_seq)
         print(f"Model Out Sequence >> {output_seq}")       
-
 
 
 def main(args):

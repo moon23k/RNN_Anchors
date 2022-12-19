@@ -1,7 +1,7 @@
 import torch, os
 import torch.nn as nn
-from model.base import Seq2Seq
-from model.hier import HierSeq2Seq
+from model.base import BaseModel
+from model.hier import HierModel
 
 
 
@@ -10,10 +10,12 @@ def init_uniform(model):
         nn.init.uniform_(param.data, -0.08, 0.08)
 
 
+
 def count_params(model):
     params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return params
     
+
 
 def check_size(model):
     param_size, buffer_size = 0, 0
@@ -28,11 +30,12 @@ def check_size(model):
     return size_all_mb
 
 
+
 def load_model(config):
     if config.task == 'sum':
-        model = HierSeq2Seq(config)
+        model = HierModel(config)
     else:
-        model = Seq2Seq(config)
+        model = BaseModel(config)
     
     model.apply(init_uniform)
     print(f"Initialized model for {config.task} task has loaded")
@@ -41,8 +44,10 @@ def load_model(config):
         assert os.path.exists(config.ckpt)
         model_state = torch.load(config.ckpt, map_location=config.device)['model_state_dict']
         model.load_state_dict(model_state)
+        model.eval()
         print(f"Model states has loaded from {config.ckpt}")       
     
     print(f"--- Model Params: {count_params(model):,}")
     print(f"--- Model  Size : {check_size(model):.3f} MB\n")
+
     return model.to(config.device)
