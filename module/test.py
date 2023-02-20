@@ -44,7 +44,7 @@ class Tester:
                 trg = batch['trg'].to(self.device)
 
                 logit = self.model(src, trg, teacher_forcing_ratio=0.0)
-                loss = self.criterion(logit.contiguous().view(-1, self.output_dim), 
+                loss = self.criterion(logit.contiguous().view(-1, self.vocab_size), 
                                       trg[:, 1:].contiguous().view(-1)).item()
                 tot_loss += loss
             tot_loss /= len(self.dataloader)
@@ -64,7 +64,7 @@ class Tester:
         
         elif self.task == 'dialog':
             encoding = self.metric_tokenizer([prev, pred], padding=True, return_tensors='pt')
-            bert_out = self.metric_model(**encoding).[0]
+            bert_out = self.metric_model(**encoding)[0]
 
             normalized = F.normalize(bert_out[:, 0, :], p=2, dim=-1)  # Only use of [CLS] token embedding
             dist = normalized.matmul(normalized.T)

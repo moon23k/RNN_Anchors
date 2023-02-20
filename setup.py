@@ -20,13 +20,17 @@ def load_data(task):
 
 
 #NMT
-def preprocess_nmt(orig_data, volumn=32000, min_len=10, max_len=300, max_diff=50):
+def preprocess_nmt(orig_data, volumn=32000):
+    min_len = 10 
+    max_len = 300
+    max_diff = 50
+
     volumn_cnt = 0
     concat, processed = [], []
     
     for elem in orig_data:
         temp_dict = dict()
-        src, trg = elem['en'], elem['de']
+        src, trg = elem['en'].lower(), elem['de'].lower()
         src_len, trg_len = len(src), len(trg)
 
         #define filtering conditions
@@ -35,8 +39,8 @@ def preprocess_nmt(orig_data, volumn=32000, min_len=10, max_len=300, max_diff=50
         dif_condition = abs(src_len - trg_len) < max_diff
 
         if max_condition & min_condition & dif_condition:
-            temp_dict['src'] = src.lower()
-            temp_dict['trg'] = trg.lower()
+            temp_dict['src'] = src
+            temp_dict['trg'] = trg
             processed.append(temp_dict)
             concat.append(src + trg)
             
@@ -111,12 +115,16 @@ def preprocess_dialog(orig_data, volumn=32000):
 
 
 #Sum
-def preprocess_sum(orig_data, volumn=32000, max_num=50, min_len=500, max_len=3000):
+def preprocess_sum(orig_data, volumn=32000):
+    max_num = 50 
+    min_len = 500 
+    max_len = 2000
+
     volumn_cnt = 0
     concat, processed = [], []
 
     for elem in orig_data:
-        src, trg = elem['article'], elem['highlights']
+        src, trg = elem['article'].lower(), elem['highlights'].lower()
 
         #Filter too Short or too Long Context
         if not (min_len < len(src) < max_len):
