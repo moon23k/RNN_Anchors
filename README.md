@@ -18,7 +18,7 @@ Except for that, all configurations are the same in the three tasks.
 | :---                                               | :---                                    | :---                                     |
 | **`Vocab Size:`** &hairsp; `30,000`                | **`Input Dimension:`** `30,000`         | **`Epochs:`** `10`                       |
 | **`Tokenizer Type:`** &hairsp; `BPE`               | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `32`                   |
-| **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &emsp; | **`Embedding Dimension:`** `256` &emsp; | **`Learning Rate:`** `5e-4`              |
+| **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &emsp; | **`Embedding Dimension:`** `256` &emsp; | **`Learning Rate:`** `1e-3`              |
 | **`UNK Idx, Token:`** &hairsp; `1`, `[UNK]`        | **`Hidden Dimension:`** `512`           | **`iters_to_accumulate:`** `4`           |
 | **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &emsp; |
 | **`EOS Idx, Token:`** &hairsp; `3`, `[EOS]`        | **`Drop-out Ratio:`** `0.5`             | **`Apply AMP:`** `True`                  |
@@ -48,23 +48,23 @@ To handle this, arbitrary evaluation metric, named **Similarity Score** has used
 
 
 ## How to Use
-**First clone git repo in your local env**
+**Clone git repo**
 ```
 git clone https://github.com/moon23k/LSTM_Anchors
 ```
 
 <br>
 
-**Download and Process Dataset via setup.py**
+**Download and Process Dataset**
 ```
 bash setup.py -task [all, nmt, dialog, sum]
 ```
 
 <br>
 
-**Execute the run file on your purpose (search is optional)**
+**Execute the run file**
 ```
-python3 run.py -task [nmt, dialog, sum] -mode [train, test, inference] -search [greedy, beam]
+python3 run.py -task [nmt, dialog, sum] -mode [train, test, inference] -search(optional) [greedy, beam]
 ```
 
 
