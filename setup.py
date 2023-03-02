@@ -182,7 +182,8 @@ def build_vocab(task):
 
 
 
-def tokenize_data(task, tokenized, tokenizer):
+def tokenize_data(task, tokenized, tokenizer, count=False):
+    max_trg_len = 0
     tokenized_data = []
     for elem in tokenized:
         temp_dict = dict()
@@ -194,9 +195,21 @@ def tokenize_data(task, tokenized, tokenizer):
             temp_dict['src'] = temp
         else:    
             temp_dict['src'] = tokenizer.EncodeAsIds(elem['src'])
-        
+
         temp_dict['trg'] = tokenizer.EncodeAsIds(elem['trg'])
+        if count:
+            if max_trg_len < len(temp_dict['trg']):
+                max_trg_len = len(temp_dict['trg'])
+
         tokenized_data.append(temp_dict)
+
+    if count:
+        with open('config.yaml', 'r') as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+            config['model'][f'{task}_max_pred_len'] = 100
+
+        with open('config.yaml', 'w') as f:
+            yaml.dump(config, f)        
     
     return tokenized_data
 
