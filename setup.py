@@ -64,11 +64,16 @@ def preprocess_dialog(orig_data, volumn=32000):
     for dial in orig_data:
         dial_list = []
         dial_turns = len(dial)
+
+        if max([len(d) for d in dial]) > 300:
+            continue
         
         for uttr in dial:
             _uttr = re.sub(r"\s([?,.!’](?:\s|$))", r'\1', uttr)
-            _uttr = re.sub(r'([’])\s+', r'\1', _uttr)
-            dial_list.append(_uttr.strip().lower())
+            _uttr = re.sub(r'([’])\s+', r'\1', _uttr).strip().lower()
+            if len(_uttr) > 300:
+                break
+            dial_list.append(_uttr)
         
         if dial_turns < 2:
             continue
@@ -182,7 +187,7 @@ def build_vocab(task):
 
 
 
-def tokenize_data(task, tokenized, tokenizer, count=False):
+def tokenize_data(task, tokenized, tokenizer):
     max_trg_len = 0
     tokenized_data = []
     for elem in tokenized:
@@ -197,19 +202,18 @@ def tokenize_data(task, tokenized, tokenizer, count=False):
             temp_dict['src'] = tokenizer.EncodeAsIds(elem['src'])
 
         temp_dict['trg'] = tokenizer.EncodeAsIds(elem['trg'])
-        if count:
-            if max_trg_len < len(temp_dict['trg']):
-                max_trg_len = len(temp_dict['trg'])
+
+        if max_trg_len < len(temp_dict['trg']):
+            max_trg_len = len(temp_dict['trg'])
 
         tokenized_data.append(temp_dict)
 
-    if count:
-        with open('config.yaml', 'r') as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
-            config['model'][f'{task}_max_pred_len'] = 100
+    with open('config.yaml', 'r') as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+        config['model'][f'{task}_max_pred_len'] = max_trg_len
 
-        with open('config.yaml', 'w') as f:
-            yaml.dump(config, f)        
+    with open('config.yaml', 'w') as f:
+        yaml.dump(config, f)        
     
     return tokenized_data
 

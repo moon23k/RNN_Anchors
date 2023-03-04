@@ -19,6 +19,7 @@ from module.search import Search
 
 class Config(object):
     def __init__(self, args):    
+
         with open('config.yaml', 'r') as f:
             params = yaml.load(f, Loader=yaml.FullLoader)
             for group in params.keys():
@@ -30,12 +31,8 @@ class Config(object):
         self.ckpt = f"ckpt/{self.task}.pt"
 
         use_cuda = torch.cuda.is_available()
-        if use_cuda:
-            self.device_type = 'cuda'
-        else:
-            self.device_type = 'cpu'
-
-        self.device = torch.device('cuda' if use_cuda else 'cpu')
+        self.device_type = 'cuda' if use_cuda else 'cpu'
+        self.device = torch.device(self.device_type)
 
         if self.task != 'train':
             if self.task == 'nmt':
@@ -44,6 +41,7 @@ class Config(object):
                 self.max_pred_len = self.dialog_max_pred_len
             elif self.task == 'sum':
                 self.max_pred_len = self.sum_max_pred_len
+                self.batch_size = self.batch_size // 8
 
         if self.task == 'inference':
             self.search_method = args.search
@@ -76,6 +74,7 @@ def load_tokenizer(task):
 def inference(config, model, tokenizer):
     if config.search_method == 'beam':
         beam = Search(config, model)
+    search_module = Search(config, model)
 
     print(f'--- Inference Process Started! ---')
     print('[ Type "quit" on user input to stop the Process ]')
@@ -93,15 +92,14 @@ def inference(config, model, tokenizer):
 
         input_tensor = torch.LongTensor(tokenizer.encode(input_seq)).unsqueeze(0)
 
+
         if config.search_method == 'greedy':
-            output_tensor = model(input_tensor)
-
+            pred_tensor = search_module.greedy_search(input_tensor)
         elif config.search_method == 'beam':
-            output_tensor = beam(model, input_tensor)
+            pred_tensor = search_module.beam_search(input_tensor)
 
-        output_seq = tokenizer.decode(output_tensor)
-
-        print(f"Model Out Sequence >> {output_seq}")
+        pred_seq = tokenizer.decode(pred_tensor)
+        print(f"Model Out Sequence >> {tokenizer.decode(pred_seq)}")
 
 
 
@@ -141,7 +139,7 @@ if __name__ == '__main__':
 
     if args.task == 'inference':
         assert args.search in ['greedy', 'beam']
-        if config.task == 'sum':
+        if args.task == 'sum':
             nltk.download('punkt')
 
     main(args)
