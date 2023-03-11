@@ -23,16 +23,16 @@ class Search:
         self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'hiddens', 'length'])
 
 
-    def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2):
-        #find max number of consecutively repeated tokens 
+    def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2): 
+        if not node.log_prob:
+            return node.log_prob
+
+        #find max number of consecutively repeated tokens
         repeat = max([sum(1 for token in group if token != self.pad_id) for _, group in groupby(node.pred.tolist())])
 
-        if repeat > max_repeat:
-            repeat_penalty = 0.5
-        else:
-            repeat_penalty = 1
-        
+        repeat_penalty = 0.5 if repeat > max_repeat else 1
         len_penalty = ((node.length + min_length) / (1 + min_length)) ** alpha
+        
         score = node.log_prob / len_penalty
         score = score * repeat_penalty
         return score
@@ -62,18 +62,25 @@ class Search:
         batch_hiddens = self.model.encoder(input_tensor)
 
         for idx in range(batch_size):
-
             hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
                        batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
             Node, nodes, end_nodes, top_nodes = self.get_nodes(hiddens)
             
             for t in range(self.max_len):
-                curr_nodes = [nodes.get() for _ in range(self.beam_size)]
+                curr_nodes = []
+                while True:
+                    try:
+                        curr_node = nodes.get()
+                        curr_nodes.append(curr_node)
+                    except:
+                        continue
+                    if len(curr_nodes) == self.beam_size:
+                        break                    
                 
                 for curr_score, curr_node in curr_nodes:
                     last_token = curr_node.pred[:, -1]
 
-                    if last_token.item() == self.eos_id and curr_node.prev_node != None:
+                    if last_token.item() == self.eos_id:
                         end_nodes.append((curr_score, curr_node))
                         continue
 
@@ -85,15 +92,17 @@ class Search:
                         pred = preds[:, k].unsqueeze(0)
                         log_prob = log_probs[:, k].item()
                         pred = torch.cat([curr_node.pred, pred], dim=-1)
-
                         next_node = Node(prev_node = curr_node,
                                          pred = pred,
                                          log_prob = curr_node.log_prob + log_prob,
                                          hiddens = hidden,
                                          length = curr_node.length+1)
-                        
-                        next_score = self.get_score(next_node)
-                        nodes.put((next_score, next_node))    
+
+                        next_score = self.get_score(next_node)                        
+                        try:
+                            nodes.put((next_score, next_node))
+                        except:
+                            continue                            
 
                     if not t:
                         break

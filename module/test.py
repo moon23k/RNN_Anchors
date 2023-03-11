@@ -1,4 +1,5 @@
 import torch, math, time, evaluate
+from tqdm import tqdm
 from module.search import Search
 from transformers import BertModel, BertTokenizerFast
 
@@ -32,30 +33,47 @@ class Tester:
 
 
     def test(self):
-        greedy_metric_score, beam_metric_score = 0, 0
+        tot_len = 0
+        greedy_score, beam_score = 0, 0
+
         with torch.no_grad():
+
             print(f'Test Results on {self.task.upper()}')
-            for idx, batch in enumerate(self.dataloader):
+            for batch in tqdm(self.dataloader):
+            
                 src = batch['src'].to(self.device)
                 trg = batch['trg'].to(self.device)
-
+                tot_len += src.size(0)
+        
                 greedy_pred = self.search.greedy_search(src)
                 beam_pred = self.search.beam_search(src)
-
-                greedy_metric_score += self.metric_score(greedy_pred, trg)
-                beam_metric_score += self.metric_score(beam_pred, trg)
-
-        print(f'Total Greedy Test Metric Score: {greedy_metric_score}')
-        print(f'Total  Beam  Test Metric Score: {beam_metric_score}')
-
-
-
-    def metric_score(self, pred, label, prev=None):
+                
+                greedy_score += self.metric_score(greedy_pred, trg)
+                beam_score += self.metric_score(beam_pred, trg)
         
-        batch_size = label.size(0)
+        greedy_score = round(greedy_score/tot_len, 2)
+        beam_score = round(beam_score/tot_len, 2)
         
-        if self.task == 'dialog':
-            encoding = self.metric_tokenizer([prev, pred], padding=True, truncation=True, return_tensors='pt')
+        return greedy_score, beam_score
+        
+
+
+    def metric_score(self, pred, label):
+
+        pred = self.tokenizer.decode(pred)
+        label = self.tokenizer.decode(label.tolist())
+
+        #For Translation and Summarization Tasks
+        if self.task != 'dialog':
+            self.metric_module.add_batch(predictions=pred, references=[[l] for l in label])
+            if self.task == 'nmt':
+                score = self.metric_module.compute()['bleu']
+            elif self.task == 'sum':        
+                score = self.metric_module.compute()['rouge2']
+
+        #For Dialogue Generation Task
+        elif self.task == 'dialog':
+            encoding = self.metric_tokenizer(pred, label, padding=True, truncation=True, return_tensors='pt')
             bert_out = self.metric_model(**encoding)[0]
 
             normalized = torch.nn.functional.normalize(bert_out[:, 0, :], p=2, dim=-1)
@@ -63,14 +81,4 @@ class Tester:
             sim_matrix = dist.new_ones(dist.shape) - dist
             score = sim_matrix[0, 1].item()
 
-        else:
-            pred_batch = [self.tokenizer.EncodeAsPieces(p)[1:-1] for p in pred]
-            label_batch = [[self.tokenizer.EncodeAsPieces(l)[1:-1]] for l in label]
-            self.metric_module.add_batch(predictions=pred_batch, references=label_batch)
-            if self.task == 'nmt':
-                score = self.metric_module.compute()['bleu']
-            elif self.task == 'sum':        
-                score = self.metric_module.compute()['rouge2'].mid.fmeasure
-
-
-        return (score * 100) / batch_size
+        return (score * 100)
