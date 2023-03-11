@@ -34,6 +34,10 @@ class Config(object):
         self.device_type = 'cuda' if use_cuda else 'cpu'
         self.device = torch.device(self.device_type)
 
+
+        if self.task == 'sum':
+            self.batch_size = self.batch_size // 8
+
         if self.task != 'train':
             if self.task == 'nmt':
                 self.max_pred_len = self.nmt_max_pred_len
@@ -41,7 +45,6 @@ class Config(object):
                 self.max_pred_len = self.dialog_max_pred_len
             elif self.task == 'sum':
                 self.max_pred_len = self.sum_max_pred_len
-                self.batch_size = self.batch_size // 8
 
         if self.task == 'inference':
             self.search_method = args.search
