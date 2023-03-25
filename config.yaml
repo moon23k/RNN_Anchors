@@ -13,17 +13,14 @@ vocab:
 
 
 model:
+    n_layers: 2
     emb_dim: 256
     hidden_dim: 512
-    pff_dim: 512
-    n_layers: 3
-    n_heads: 8
     dropout_ratio: 0.1
-
 
 train:
     clip: 1
     n_epochs: 10
-    batch_size: 16
-    learning_rate: 0.0005
+    batch_size: 128
+    learning_rate: 0.005
     iters_to_accumulate: 4
