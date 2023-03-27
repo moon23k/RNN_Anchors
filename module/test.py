@@ -54,7 +54,8 @@ class Tester:
         greedy_score = round(greedy_score/tot_len, 2)
         beam_score = round(beam_score/tot_len, 2)
         
-        return greedy_score, beam_score
+        print(f'--- Greedy Score: {greedy_score}')
+        print(f'--- Beam   Score: {beam_score}')
         
 
 

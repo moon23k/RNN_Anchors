@@ -14,16 +14,16 @@ class Search:
         self.model = model
         self.task = config.task
         self.device = config.device
-        self.max_len = config.max_pred_len
-
+        
         self.bos_id = config.bos_id
         self.eos_id = config.eos_id
         self.pad_id = config.pad_id
 
-        self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'length'])
+        self.max_len = config.max_pred_len
+        self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'hiddens', 'length'])
 
 
-    def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2):            
+    def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2): 
         if not node.log_prob:
             return node.log_prob
 
@@ -38,94 +38,107 @@ class Search:
         return score
 
 
-    def get_nodes(self):
+    def get_nodes(self, hiddens):
         Node = self.Node
         nodes = PriorityQueue()
-        start_tensor = torch.LongTensor(1, 1).fill_(self.bos_id).to(self.device)
+        bos_tokens = torch.LongTensor(1, 1).fill_(self.bos_id).to(self.device)
 
-        start_node = Node(prev_node = None,
-                          pred = start_tensor,
-                          log_prob = 0.0,
+        start_node = Node(prev_node = None, 
+                          pred = bos_tokens, 
+                          log_prob = 0.0, 
+                          hiddens = hiddens,                               
                           length = 0)
 
         for _ in range(self.beam_size):
-            nodes.put((0, start_node))
-                    
+            nodes.put((0, start_node))        
+
         return Node, nodes, [], []    
 
 
 
     def beam_search(self, input_tensor):
-        Node, nodes, end_nodes, top_nodes = self.get_nodes()
+        batch_pred = []
+        batch_size = input_tensor.size(0)
+        batch_hiddens = self.model.encoder(input_tensor)
 
-        if self.task == 'sum':
-            seq_mask, e_mask = self.model.enc_mask(input_tensor)
-            memory = self.model.encoder(input_tensor, seq_mask, e_mask)
-        else:
-            e_mask = self.model.enc_mask(input_tensor)
-            memory = self.model.encoder(input_tensor, e_mask)        
-
-        for t in range(self.max_len):
-            curr_nodes = [nodes.get() for _ in range(self.beam_size)]
+        for idx in range(batch_size):
+            hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
+                       batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
+            Node, nodes, end_nodes, top_nodes = self.get_nodes(hiddens)
             
-            for curr_score, curr_node in curr_nodes:
-                if curr_node.pred[:, -1].item() == self.eos_id and curr_node.prev_node != None:
-                    end_nodes.append((curr_score, curr_node))
-                    continue
-
-                d_input = curr_node.pred 
-                d_mask = self.model.dec_mask(d_input)
-                d_out = self.model.decoder(d_input, memory, e_mask, d_mask)
-                out = self.model.fc_out(d_out)[:, -1]
+            for t in range(self.max_len):
+                curr_nodes = []
+                while True:
+                    try:
+                        curr_node = nodes.get()
+                        curr_nodes.append(curr_node)
+                    except:
+                        continue
+                    if len(curr_nodes) == self.beam_size:
+                        break                    
                 
-                logits, preds = torch.topk(out, self.beam_size)
-                logits, preds = logits, preds
-                log_probs = -F.log_softmax(logits, dim=-1)
+                for curr_score, curr_node in curr_nodes:
+                    last_token = curr_node.pred[:, -1]
 
-                for k in range(self.beam_size):
-                    pred = preds[:, k].unsqueeze(0)
-                    log_prob = log_probs[:, k].item()
-                    pred = torch.cat([curr_node.pred, pred], dim=-1)           
-                    
-                    next_node = Node(prev_node = curr_node,
-                                     pred = pred,
-                                     log_prob = curr_node.log_prob + log_prob,
-                                     length = curr_node.length + 1)
-                    next_score = self.get_score(next_node)                
-                    nodes.put((next_score, next_node))
-                
-                if (not t) or (len(end_nodes) == self.beam_size):
-                    break
+                    if last_token.item() == self.eos_id:
+                        end_nodes.append((curr_score, curr_node))
+                        continue
 
-        if len(end_nodes) == 0:
-            _, top_node = nodes.get()
-        else:
-            _, top_node = sorted(end_nodes, key=operator.itemgetter(0), reverse=True)[0]
-        
-        return top_node.pred.squeeze(0)      
+                    out, hidden = self.model.decoder(last_token, curr_node.hiddens)                
+                    logits, preds = torch.topk(out, self.beam_size)
+                    log_probs = -F.log_softmax(logits, dim=-1)
+
+                    for k in range(self.beam_size):
+                        pred = preds[:, k].unsqueeze(0)
+                        log_prob = log_probs[:, k].item()
+                        pred = torch.cat([curr_node.pred, pred], dim=-1)
+                        next_node = Node(prev_node = curr_node,
+                                         pred = pred,
+                                         log_prob = curr_node.log_prob + log_prob,
+                                         hiddens = hidden,
+                                         length = curr_node.length+1)
+
+                        next_score = self.get_score(next_node)                        
+                        try:
+                            nodes.put((next_score, next_node))
+                        except:
+                            continue                            
+
+                    if not t:
+                        break
+
+            if len(end_nodes) == 0:
+                _, top_node = nodes.get()
+            else:
+                _, top_node = sorted(end_nodes, key=operator.itemgetter(0), reverse=True)[0]
+            
+            pred = top_node.pred.squeeze()[1:]
+            batch_pred.append(pred.tolist())
+
+        return batch_pred
     
 
     def greedy_search(self, input_tensor):
+        batch_pred = []
+        batch_size = input_tensor.size(0)
+        batch_hiddens = self.model.encoder(input_tensor)
 
-        output_seq = [[self.pad_id  if i else self.bos_id for i in range(self.max_len)]]
-        output_tensor = torch.LongTensor(output_seq).to(self.device)
-
-        if self.task == 'sum':
-            seq_mask, e_mask = self.model.enc_mask(input_tensor)
-            memory = self.model.encoder(input_tensor, seq_mask, e_mask)
-        else:
-            e_mask = self.model.enc_mask(input_tensor)
-            memory = self.model.encoder(input_tensor, e_mask)        
-
-        for i in range(1, self.max_len):
-            d_mask = self.model.dec_mask(output_tensor)
-            out = self.model.decoder(output_tensor, memory, e_mask, d_mask)
-            out = self.model.fc_out(out)
+        for idx in range(batch_size):
             
-            pred = out[:, i].argmax(-1)
-            output_tensor[:, i] = pred
+            hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
+                       batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
+            
+            dec_input = torch.LongTensor(1).fill_(self.bos_id).to(self.device)
+            pred = torch.LongTensor(self.max_len).fill_(self.pad_id).to(self.device)
 
-            if pred.item() == self.eos_id:
-                break
+            for t in range(1, self.max_len):
+                out, hiddens = self.model.decoder(dec_input, hiddens)
+                pred_token = out.argmax(-1)
+                pred[t] = pred_token
+                dec_input = pred_token
 
-        return output_tensor
+                if pred_token.item() == self.eos_id:
+                    break
+            batch_pred.append(pred[1:].tolist())
+
+        return batch_pred

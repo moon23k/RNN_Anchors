@@ -34,7 +34,7 @@ class Collator(object):
     def __call__(self, batch):
         if self.task != 'sum':
             return self.base_collate(batch)
-        elif self.task == 'feat':
+        elif self.task == 'sum':
             return self.sum_collate(batch)
 
 
