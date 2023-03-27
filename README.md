@@ -1,5 +1,5 @@
-## LSTM Anchors
-> The main purpose of this repo is to measure the performance of the **LSTM Encoder-Decoder Model** on three Natural Language Generation tasks. 
+## RNN Anchors
+> The main purpose of this repo is to measure the performance of the **RNN Encoder-Decoder Model** on three Natural Language Generation tasks. 
 Each task is **Neural Machine Translation**, **Dialogue Generation**, and **Abstractive Text Summarization**. The model architecture has implemented by referring to the famous **Sequence to Sequence** paper, and **WMT14 En-De**, **Daily-Dialogue**, and **Daily-CNN** datasets have used for each task.
 Machine translation and Dialogue generation deal with relatively short sequences, but Text Summarization covers much longers sequences. Since it is difficult to properly handle long sentences only with the basic Encoder-Decoder structure, a hierarchical model structure has used for summary task.
 Except for that, all configurations are the same in the three tasks.
@@ -50,7 +50,7 @@ To handle this, arbitrary evaluation metric, named **Similarity Score** has used
 ## How to Use
 **Clone git repo**
 ```
-git clone https://github.com/moon23k/LSTM_Anchors
+git clone https://github.com/moon23k/RNN_Anchors
 ```
 
 <br>
