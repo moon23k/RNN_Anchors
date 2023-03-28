@@ -17,11 +17,18 @@ Except for that, all configurations are the same in the three tasks.
 | &emsp; **Vocab Setup**                             | &emsp; **Model Setup**                  | &emsp; **Training Setup**                |
 | :---                                               | :---                                    | :---                                     |
 | **`Vocab Size:`** &hairsp; `30,000`                | **`Input Dimension:`** `30,000`         | **`Epochs:`** `10`                       |
-| **`Tokenizer Type:`** &hairsp; `BPE`               | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `32`                   |
+| **`Tokenizer Type:`** &hairsp; `BPE`               | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `128`, `32(sum)`       |
 | **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &emsp; | **`Embedding Dimension:`** `256` &emsp; | **`Learning Rate:`** `1e-3`              |
 | **`UNK Idx, Token:`** &hairsp; `1`, `[UNK]`        | **`Hidden Dimension:`** `512`           | **`iters_to_accumulate:`** `4`           |
 | **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &emsp; |
 | **`EOS Idx, Token:`** &hairsp; `3`, `[EOS]`        | **`Drop-out Ratio:`** `0.5`             | **`Apply AMP:`** `True`                  |
+
+<br>
+
+To shorten the training speed, three techiques are used. <br> 
+* Tokenization has performed in advance. <br>
+* Accumulative Loss Update, as shown in the table above, accumulative frequency has set 4. <br>
+* application of AMP, which enables to convert float32 type vector into float16 type vector.
 
 <br>
 <br>
