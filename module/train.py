@@ -24,6 +24,7 @@ class Trainer:
         self.optimizer = optim.AdamW(self.model.parameters(), lr=config.learning_rate)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min')
         
+        self.early_stop = config.early_stop
         self.patience = config.patience
 
         self.ckpt = config.ckpt
