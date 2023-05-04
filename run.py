@@ -34,7 +34,6 @@ class Config(object):
         self.device_type = 'cuda' if use_cuda else 'cpu'
         self.device = torch.device(self.device_type)
 
-
         if self.task == 'sum':
             self.batch_size = self.batch_size // 8
 
