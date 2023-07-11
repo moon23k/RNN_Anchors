@@ -9,18 +9,17 @@ class Encoder(nn.Module):
         
         self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
         
-        self.rnn = nn.LSTM(config.emb_dim, 
-                           config.hidden_dim, 
-                           config.n_layers, 
-                           batch_first=True, 
-                           dropout=config.dropout_ratio)
+        self.net = nn.RNN(config.emb_dim, 
+                          config.hidden_dim,
+                          batch_first=True, 
+                          dropout=config.dropout_ratio)
         
         self.dropout = nn.Dropout(config.dropout_ratio)
     
 
     def forward(self, x):
         x = self.dropout(self.embedding(x)) 
-        _, hiddens = self.rnn(x)
+        _, hiddens = self.net(x)
         return hiddens
 
 
@@ -31,9 +30,8 @@ class Decoder(nn.Module):
     
         self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
     
-        self.rnn = nn.LSTM(config.emb_dim,
+        self.net = nn.RNN(config.emb_dim,
                            config.hidden_dim, 
-                           config.n_layers,
                            batch_first=True,
                            dropout=config.dropout_ratio)
     
@@ -43,15 +41,15 @@ class Decoder(nn.Module):
     
     def forward(self, x, hiddens):
         x = self.dropout(self.embedding(x.unsqueeze(1)))
-        out, hiddens = self.rnn(x, hiddens)
+        out, hiddens = self.net(x, hiddens)
         out = self.fc_out(out.squeeze(1))
         return out, hiddens
 
 
 
-class BaseModel(nn.Module):
+class SeqGenRNN(nn.Module):
     def __init__(self, config):
-        super(BaseModel, self).__init__()
+        super(SeqGenRNN, self).__init__()
 
         self.device = config.device
         self.vocab_size = config.vocab_size

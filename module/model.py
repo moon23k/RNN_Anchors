@@ -1,7 +1,6 @@
-import torch, os
+import os, torch
 import torch.nn as nn
 from model.base import BaseModel
-from model.hier import HierModel
 
 
 
@@ -32,10 +31,7 @@ def check_size(model):
 
 
 def load_model(config):
-    if config.task == 'sum':
-        model = HierModel(config)
-    else:
-        model = BaseModel(config)
+    model = BaseModel(config)
     
     model.apply(init_uniform)
     print(f"Initialized model for {config.task} task has loaded")
