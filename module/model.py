@@ -1,22 +1,23 @@
 import os, torch
 import torch.nn as nn
-from model.base import BaseModel
+from model.rnn_model import SeqGenRNN
+from model.lstm_model import SeqGenLSTM
+from model.gru_model import SeqGenGRU
 
 
 
-def init_uniform(model):
+def init_weights(model):
     for name, param in model.named_parameters():
         nn.init.uniform_(param.data, -0.08, 0.08)
 
 
 
-def count_params(model):
-    params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    return params
-    
+def print_model_desc(model):
+    #Number of trainerable parameters
+    n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"--- Model Params: {n_params:,}")
 
-
-def check_size(model):
+    #Model size check
     param_size, buffer_size = 0, 0
 
     for param in model.parameters():
@@ -26,14 +27,19 @@ def check_size(model):
         buffer_size += buffer.nelement() * buffer.element_size()
 
     size_all_mb = (param_size + buffer_size) / 1024**2
-    return size_all_mb
+    print(f"--- Model  Size : {size_all_mb:.3f} MB\n")
 
 
 
 def load_model(config):
-    model = BaseModel(config)
+    if config.model_type == 'rnn':
+        model = SeqGenRNN(config)
+    elif config.model_type == 'lstm':
+        model = SeqGenLSTM(config)
+    elif config.model_type == 'gru':
+        model = SeqGenGRU(config)        
     
-    model.apply(init_uniform)
+    init_weights(model)
     print(f"Initialized model for {config.task} task has loaded")
 
     if config.mode != 'train':
@@ -43,7 +49,5 @@ def load_model(config):
         model.eval()
         print(f"Model states has loaded from {config.ckpt}")       
     
-    print(f"--- Model Params: {count_params(model):,}")
-    print(f"--- Model  Size : {check_size(model):.3f} MB\n")
-
+    print_model_desc(model)
     return model.to(config.device)

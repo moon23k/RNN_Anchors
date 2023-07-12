@@ -11,8 +11,9 @@ class Encoder(nn.Module):
 
         self.net = nn.GRU(config.emb_dim, 
                           config.hidden_dim, 
-                          bidirectional=True, 
-                          batch_first=True)        
+                          batch_first=True,
+                          num_layers=config.n_layers,
+                          bidirectional=config.bidirectional)        
         
         self.dropout = nn.Dropout(config.dropout_ratio)
     
@@ -31,9 +32,13 @@ class Decoder(nn.Module):
         self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
     
         self.net = nn.GRU((config.hidden_dim * 2) + config.emb_dim, 
-                          config.hidden_dim, batch_first=True)
+                          config.hidden_dim, 
+                          batch_first=True,
+                          num_layers=config.n_layers,
+                          bidirectional=config.bidirectional)
     
-        self.fc_out = nn.Linear(config.hidden_dim, config.vocab_size)
+        self.fc_out = nn.Linear(config.hidden_dim * config.direction, 
+                                config.vocab_size)
         self.dropout = nn.Dropout(config.dropout_ratio)
     
     
@@ -45,9 +50,9 @@ class Decoder(nn.Module):
 
 
 
-class SeqGenLSTM(nn.Module):
+class SeqGenGRU(nn.Module):
     def __init__(self, config):
-        super(SeqGenLSTM, self).__init__()
+        super(SeqGenGRU, self).__init__()
 
         self.device = config.device
         self.vocab_size = config.vocab_size

@@ -10,16 +10,17 @@ class Search:
     def __init__(self, config, model):
         super(Search, self).__init__()
         
-        self.beam_size = 4
         self.model = model
-        self.task = config.task
         self.device = config.device
+        self.model_type = config.model_type
         
+        self.max_len = 512
+        self.beam_size = 4
+
         self.bos_id = config.bos_id
         self.eos_id = config.eos_id
         self.pad_id = config.pad_id
 
-        self.max_len = config.max_pred_len
         self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'hiddens', 'length'])
 
 
@@ -35,10 +36,11 @@ class Search:
         
         score = node.log_prob / len_penalty
         score = score * repeat_penalty
+
         return score
 
 
-    def get_nodes(self, hiddens):
+    def init_nodes(self, hiddens):
         Node = self.Node
         nodes = PriorityQueue()
         bos_tokens = torch.LongTensor(1, 1).fill_(self.bos_id).to(self.device)
@@ -52,7 +54,7 @@ class Search:
         for _ in range(self.beam_size):
             nodes.put((0, start_node))        
 
-        return Node, nodes, [], []    
+        return Node, nodes, []
 
 
 
@@ -62,9 +64,14 @@ class Search:
         batch_hiddens = self.model.encoder(input_tensor)
 
         for idx in range(batch_size):
-            hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
-                       batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
-            Node, nodes, end_nodes, top_nodes = self.get_nodes(hiddens)
+            
+            if self.model_type == 'lstm':
+                hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
+                           batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
+            else:
+                hiddens = batch_hiddens[:, idx].unsqueeze(1).contiguous()
+
+            Node, nodes, end_nodes = self.get_nodes(hiddens)
             
             for t in range(self.max_len):
                 curr_nodes = []

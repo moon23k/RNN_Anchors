@@ -12,16 +12,17 @@ vocab:
 
 model:
     n_layers: 2
+    direction: 2
     emb_dim: 256
     hidden_dim: 512
     dropout_ratio: 0.1
 
 
 train:
-    clip: 1
     n_epochs: 10
+    batch_size: 128
+    lr: 0.001
     early_stop: 1
     patience: 3
-    batch_size: 128
-    learning_rate: 0.001
+    clip: 1
     iters_to_accumulate: 4
