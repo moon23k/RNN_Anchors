@@ -1,19 +1,36 @@
-## LSTM Anchors
+## RNN Anchors 
+
+&nbsp; The main objective of this repository is to measure and compare the performance of Sequence to Sequence models utilizing RNN-based networks in three Natural Language Generation tasks. The models include **RNN**, **LSTM**, and **GRU**, while the tasks are **Neural Machine Translation**, **Dialogue Generation**, and **Abstractive Text Summarization**. The overall model architecture has implemented by referring to the famous **Sequence to Sequence** paper, and **WMT14 En-De**, **Daily-Dialogue**, and **Daily-CNN** datasets have used for each task.
+
+
+<br><br>
+
+
+## RNN Types
+
+<p align="center">
+  <img src="https://github.com/moon23k/LSTM_Anchors/assets/71929682/051d7ace-b763-46ab-a4bb-9f362563da27" width="730"></img>
+</p><br>
+
+**RNN (Recurrent Neural Network)** <br>
+> RNN processes sequential data by using the previous state's output as the current state's input. It has a simple and intuitive structure, and performs well on very simple sequences. However, one of RNN's drawbacks is its difficulty in learning "long-term dependencies." As the sequence gets longer, it becomes challenging for previous information to be effectively propagated to the current state.
 
 <br>
 
-> The main purpose of this repo is to measure the performance of the **LSTM Encoder-Decoder Model** on three Natural Language Generation tasks. 
-Each task is **Neural Machine Translation**, **Dialogue Generation**, and **Abstractive Text Summarization**. The model architecture has implemented by referring to the famous **Sequence to Sequence** paper, and **WMT14 En-De**, **Daily-Dialogue**, and **Daily-CNN** datasets have used for each task.
-Machine translation and Dialogue generation deal with relatively short sequences, but Text Summarization covers much longers sequences. Since it is difficult to properly handle long sentences only with the basic Encoder-Decoder structure, a hierarchical model structure has used for summary task.
-Except for that, all configurations are the same in the three tasks.
+**LSTM (Long Short-Term Memory)** <br>
+> LSTM was proposed to overcome the limitations of RNN. It tackles the issue of long-term dependencies by employing mechanisms called "gates." These gates control the flow of information, preserving important information and discarding irrelevant details. LSTM consists of an input gate, a forget gate, and an output gate, each responsible for determining the significance of the input, retaining the memory of the previous state, and controlling the output, respectively.
 
 <br>
-<br>
 
-## Model desc
+**GRU (Gated Recurrent Unit)** <br>
+> GRU is another variant of recurrent neural networks designed to reduce the complexity of LSTM. It has a simpler structure than LSTM and consists of two gates: an update gate and a reset gate. The update gate controls how much of the previous state's information should be retained, while the reset gate determines how much of the previous state should be forgotten. GRU is computationally efficient compared to LSTM and generally performs well when dealing with relatively small amounts of data.
+
+<br><br>
+
+## Model Architecture
 
 <br><p align="center">
-  <img src="https://github.com/moon23k/LSTM_Anchors/assets/71929682/0fe57c1f-e823-456d-b3e1-4c4bd688f00b"></img>
+  <img src="https://github.com/moon23k/LSTM_Anchors/assets/71929682/0fe57c1f-e823-456d-b3e1-4c4bd688f00b" width="700"></img>
 </p><br>
 
 > The model architecture here used is LSTM Encoder-Decoder Model. Encoder takes input sequence and convert it to representation vector and Decoder takes encoder output and auto-regressive value to return prediction. But in Summarization task, Encoding process uses two Encoders in a hierarchical way. Each for sentence representation and context representation. 
@@ -32,13 +49,12 @@ The default values for experimental variables are set as follows, and each value
 | **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &emsp; |
 | **`EOS Idx, Token:`** &hairsp; `3`, `[EOS]`        | **`Drop-out Ratio:`** `0.5`             | **`Apply AMP:`** `True`                  |
 
-<br>To shorten the training speed, three techiques are used. <br> 
-* **Pre Tokenization** <br>
-* **Accumulative Loss Update**, as shown in the table above, accumulative frequency has set 4. <br>
-* **Application of AMP**, which enables to convert float32 type vector into float16 type vector.
-
 <br><br>
 
+
+## Results
+
+<br><br>
 
 
 ## How to Use
@@ -58,9 +74,13 @@ bash setup.py -task [all, nmt, dialog, sum]
 
 **Execute the run file**
 ```
-python3 run.py -task [nmt, dialog, sum] -mode [train, test, inference] -search(optional) [greedy, beam]
+python3 run.py -task [nmt, dialog, sum] -mode [train, test, inference] -model [rnn, lstm, gru] -search(optional) [greedy, beam]
 ```
 <br><br>
 
 ## Reference
 * [Sequence to Sequence Learning with Neural Networks](https://arxiv.org/abs/1409.3215)
+* [LONG SHORT-TERM MEMORY](https://www.bioinf.jku.at/publications/older/2604.pdf)
+* [Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling](https://arxiv.org/pdf/1412.3555.pdf)
+
+<br>
