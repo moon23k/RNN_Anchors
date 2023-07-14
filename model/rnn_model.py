@@ -60,7 +60,9 @@ class SeqGenRNN(nn.Module):
     
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         batch_size, max_len = trg.shape
-        outputs = torch.zeros(max_len, batch_size, self.vocab_size).to(self.device)
+        
+        outputs = torch.LongTensor(max_len, batch_size, self.vocab_size)
+        outputs = outputs.fill_(self.pad_id).to(self.device)
 
         dec_input = trg[:, 0]
         hiddens = self.encoder(src)

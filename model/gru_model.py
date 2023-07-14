@@ -10,10 +10,11 @@ class Encoder(nn.Module):
         self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
 
         self.net = nn.GRU(config.emb_dim, 
-                          config.hidden_dim, 
-                          batch_first=True,
-                          num_layers=config.n_layers,
-                          bidirectional=config.bidirectional)        
+                          config.hidden_dim,
+                          config.n_layers,
+                          bidirectional=config.bidirectional,
+                          dropout=config.dropout_ratio, 
+                          batch_first=True)
         
         self.dropout = nn.Dropout(config.dropout_ratio)
     
@@ -31,11 +32,12 @@ class Decoder(nn.Module):
     
         self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
     
-        self.net = nn.GRU((config.hidden_dim * 2) + config.emb_dim, 
-                          config.hidden_dim, 
-                          batch_first=True,
-                          num_layers=config.n_layers,
-                          bidirectional=config.bidirectional)
+        self.net = nn.GRU(config.emb_dim, 
+                          config.hidden_dim,
+                          config.n_layers,
+                          bidirectional=config.bidirectional,
+                          dropout=config.dropout_ratio, 
+                          batch_first=True)
     
         self.fc_out = nn.Linear(config.hidden_dim * config.direction, 
                                 config.vocab_size)
@@ -62,7 +64,9 @@ class SeqGenGRU(nn.Module):
     
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         batch_size, max_len = trg.shape
-        outputs = torch.zeros(max_len, batch_size, self.vocab_size).to(self.device)
+
+        outputs = torch.LongTensor(max_len, batch_size, self.vocab_size)
+        outputs = outputs.fill_(self.pad_id).to(self.device)
 
         dec_input = trg[:, 0]
         hiddens = self.encoder(src)

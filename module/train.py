@@ -31,7 +31,7 @@ class Trainer:
                                              label_smoothing=0.1).to(self.device)
 
         self.ckpt = config.ckpt
-        self.record_path = f"ckpt/{config.task}.json"
+        self.record_path = f"ckpt/{config.task}/{config.model_type}.json"
         self.record_keys = ['epoch', 'train_loss', 'train_ppl',
                             'valid_loss', 'valid_ppl', 
                             'learning_rate', 'train_time']

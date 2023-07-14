@@ -1,5 +1,4 @@
 import torch, math, time, evaluate
-from tqdm import tqdm
 from module.search import Search
 from transformers import BertModel, BertTokenizerFast
 
@@ -11,8 +10,10 @@ class Tester:
         
         self.model = model
         self.task = config.task
-        self.tokenizer = tokenizer
         self.device = config.device
+        self.model_type = config.model_type
+        
+        self.tokenizer = tokenizer
         self.dataloader = test_dataloader
         self.search = Search(config, self.model)
         
@@ -33,23 +34,21 @@ class Tester:
 
 
     def test(self):
-        tot_len = 0
         greedy_score, beam_score = 0, 0
 
         with torch.no_grad():
 
-            print(f'Test Results on {self.task.upper()}')
-            for batch in tqdm(self.dataloader):
+            print(f'Test Results of {self.model_type} model on {self.task} Task')
+            for batch in self.dataloader:
             
                 src = batch['src'].to(self.device)
-                trg = batch['trg'].to(self.device)
-                tot_len += src.size(0)
+                label = batch['trg'].tolist()
         
                 greedy_pred = self.search.greedy_search(src)
                 beam_pred = self.search.beam_search(src)
                 
-                greedy_score += self.metric_score(greedy_pred, trg)
-                beam_score += self.metric_score(beam_pred, trg)
+                greedy_score += self.metric_score(greedy_pred, label)
+                beam_score += self.metric_score(beam_pred, label)
         
         greedy_score = round(greedy_score/tot_len, 2)
         beam_score = round(beam_score/tot_len, 2)
@@ -62,7 +61,7 @@ class Tester:
     def metric_score(self, pred, label):
 
         pred = self.tokenizer.decode(pred)
-        label = self.tokenizer.decode(label.tolist())
+        label = self.tokenizer.decode(label)
 
         #For Translation and Summarization Tasks
         if self.task != 'dialog':
@@ -82,4 +81,4 @@ class Tester:
             sim_matrix = dist.new_ones(dist.shape) - dist
             score = sim_matrix[0, 1].item()
 
-        return (score * 100)
+        return score * 100
