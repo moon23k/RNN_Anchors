@@ -39,7 +39,10 @@ class Config(object):
         self.task = args.task
         self.mode = args.mode
         self.model_type = args.model
-        self.ckpt = f"ckpt/{self.task}/{self.model_type}.pt"
+        self.search_method = args.search
+
+        self.ckpt = f"ckpt/{self.task}/{self.attn_type}.pt"
+        self.tokenizer_path = f'data/{self.task}/tokenizer.json'
         self.bidirectional = True if self.direction == 2 else False
 
         if self.task == 'sum':
@@ -47,13 +50,9 @@ class Config(object):
 
         use_cuda = torch.cuda.is_available()
         self.device_type = 'cuda' if use_cuda else 'cpu'
-        
-        if self.task == 'inference':
-            self.search_method = args.search
-            self.device = torch.device('cpu')
-        else:
-            self.search = None
-            self.device = torch.device(self.device_type)
+        self.device = torch.device(self.device_type) \
+                      if self.task == 'inference' \
+                      else torch.device('cpu')
 
 
     def print_attr(self):
@@ -63,8 +62,7 @@ class Config(object):
 
 
 def load_tokenizer(config):
-    tokenizer_path = f"data/{config.task}/tokenizer.json"
-    assert os.path.exists(tokenizer_path)
+    assert os.path.exists(config.tokenizer_path)
 
     tokenizer = Tokenizer.from_file(tokenizer_path)    
     tokenizer.post_processor = TemplateProcessing(
@@ -138,10 +136,8 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     assert args.task in ['nmt', 'dialog', 'sum']
-    assert args.model in ['rnn', 'lstm', 'gru']
     assert args.mode in ['train', 'test', 'inference']
-
-    if args.task == 'inference':
-        assert args.search in ['greedy', 'beam']
+    assert args.model in ['rnn', 'lstm', 'gru']
+    assert args.search in ['greedy', 'beam']
 
     main(args)

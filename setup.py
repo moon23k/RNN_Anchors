@@ -11,7 +11,11 @@ from tokenizers.normalizers import NFD, Lowercase, StripAccents
 
 def load_data(task):
     if task == 'nmt':
-        data = load_dataset('wmt14', 'de-en', split='train')['translation']
+        data = load_dataset(
+            'wmt14', 
+            'de-en', 
+            split='train'
+        )['translation']
 
     elif task == 'dialog':
         loaded_data = load_dataset('daily_dialog')
@@ -178,11 +182,15 @@ def train_tokenizer(task):
     tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.Sequence([NFD(), Lowercase(), StripAccents()])
     tokenizer.pre_tokenizer = Whitespace()
-    trainer = WordLevelTrainer(vocab_size=vocab_config['vocab_size'], 
-                               special_tokens=[vocab_config['pad_token'], 
-                                               vocab_config['unk_token'],
-                                               vocab_config['bos_token'],
-                                               vocab_config['eos_token']])
+    trainer = WordLevelTrainer(
+        vocab_size=vocab_config['vocab_size'], 
+        special_tokens=[
+            vocab_config['pad_token'], 
+            vocab_config['unk_token'],
+            vocab_config['bos_token'],
+            vocab_config['eos_token']
+            ]
+        )
 
     tokenizer.train(files=[corpus_path], trainer=trainer)
     tokenizer.save(f"data/{task}/tokenizer.json")
@@ -228,7 +236,6 @@ def main(task):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-task', required=True)
-    parser.add_argument('-vocab_size', default=5000, required=False)
     
     args = parser.parse_args()
     assert args.task in ['all', 'nmt', 'dialog', 'sum']

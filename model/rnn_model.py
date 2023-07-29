@@ -7,14 +7,21 @@ class Encoder(nn.Module):
     def __init__(self, config):
         super(Encoder, self).__init__()
         
-        self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
+        self.embedding = nn.Embedding(
+            config.vocab_size, 
+            config.emb_dim
+        )
+
         self.dropout = nn.Dropout(config.dropout_ratio)
-        self.net = nn.RNN(config.emb_dim, 
-                          config.hidden_dim,
-                          num_layers=config.n_layers,
-                          batch_first=True, 
-                          dropout=config.dropout_ratio,
-                          bidirectional=config.bidirectional)
+        
+        self.net = nn.RNN(
+            config.emb_dim, 
+            config.hidden_dim,
+            num_layers=config.n_layers,
+            batch_first=True, 
+            dropout=config.dropout_ratio,
+            bidirectional=config.bidirectional
+        )
 
     def forward(self, x):
         x = self.dropout(self.embedding(x)) 
@@ -27,17 +34,26 @@ class Decoder(nn.Module):
     def __init__(self, config):
         super(Decoder, self).__init__()
     
-        self.embedding = nn.Embedding(config.vocab_size, config.emb_dim)
+        self.embedding = nn.Embedding(
+            config.vocab_size, 
+            config.emb_dim
+        )
+
         self.dropout = nn.Dropout(config.dropout_ratio)
-        self.net = nn.RNN(config.emb_dim,
-                          config.hidden_dim,
-                          num_layers=config.n_layers, 
-                          batch_first=True,
-                          dropout=config.dropout_ratio,
-                          bidirectional=config.bidirectional)
+        
+        self.net = nn.RNN(
+            config.emb_dim,
+            config.hidden_dim,
+            num_layers=config.n_layers, 
+            batch_first=True,
+            dropout=config.dropout_ratio,
+            bidirectional=config.bidirectional
+        )
     
-        self.fc_out = nn.Linear(config.hidden_dim * config.direction, 
-                                config.vocab_size)
+        self.fc_out = nn.Linear(
+            config.hidden_dim * config.direction, 
+            config.vocab_size
+        )
     
     
     def forward(self, x, hiddens):

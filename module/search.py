@@ -29,7 +29,8 @@ class Search:
             return node.log_prob
 
         #find max number of consecutively repeated tokens
-        repeat = max([sum(1 for token in group if token != self.pad_id) for _, group in groupby(node.pred.tolist())])
+        repeat = max([sum(1 for token in group if token != self.pad_id) \
+                     for _, group in groupby(node.pred.tolist())])
 
         repeat_penalty = 0.5 if repeat > max_repeat else 1
         len_penalty = ((node.length + min_length) / (1 + min_length)) ** alpha
@@ -45,11 +46,13 @@ class Search:
         nodes = PriorityQueue()
         bos_tokens = torch.LongTensor(1, 1).fill_(self.bos_id).to(self.device)
 
-        start_node = Node(prev_node = None, 
-                          pred = bos_tokens, 
-                          log_prob = 0.0, 
-                          hiddens = hiddens,                               
-                          length = 0)
+        start_node = Node(
+            prev_node = None, 
+            pred = bos_tokens, 
+            log_prob = 0.0, 
+            hiddens = hiddens,                               
+            length = 0
+        )
 
         for _ in range(self.beam_size):
             nodes.put((0, start_node))        
@@ -66,8 +69,10 @@ class Search:
         for idx in range(batch_size):
             
             if self.model_type == 'lstm':
-                hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
-                           batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
+                hiddens = (
+                    batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
+                    batch_hiddens[1][:, idx].unsqueeze(1).contiguous()
+                )
             else:
                 hiddens = batch_hiddens[:, idx].unsqueeze(1).contiguous()
 
@@ -99,11 +104,14 @@ class Search:
                         pred = preds[:, k].unsqueeze(0)
                         log_prob = log_probs[:, k].item()
                         pred = torch.cat([curr_node.pred, pred], dim=-1)
-                        next_node = Node(prev_node = curr_node,
-                                         pred = pred,
-                                         log_prob = curr_node.log_prob + log_prob,
-                                         hiddens = hidden,
-                                         length = curr_node.length+1)
+                        
+                        next_node = Node(
+                            prev_node = curr_node,
+                            pred = pred,
+                            log_prob = curr_node.log_prob + log_prob,
+                            hiddens = hidden,
+                            length = curr_node.length+1
+                        )
 
                         next_score = self.get_score(next_node)                        
                         try:
@@ -117,7 +125,11 @@ class Search:
             if len(end_nodes) == 0:
                 _, top_node = nodes.get()
             else:
-                _, top_node = sorted(end_nodes, key=operator.itemgetter(0), reverse=True)[0]
+                _, top_node = sorted(
+                    end_nodes, 
+                    key=operator.itemgetter(0), 
+                    reverse=True
+                )[0]
             
             pred = top_node.pred.squeeze()[1:]
             batch_pred.append(pred.tolist())
@@ -132,8 +144,10 @@ class Search:
 
         for idx in range(batch_size):
             
-            hiddens = (batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
-                       batch_hiddens[1][:, idx].unsqueeze(1).contiguous())
+            hiddens = (
+                batch_hiddens[0][:, idx].unsqueeze(1).contiguous(), 
+                batch_hiddens[1][:, idx].unsqueeze(1).contiguous()
+            )
             
             dec_input = torch.LongTensor(1).fill_(self.bos_id).to(self.device)
             pred = torch.LongTensor(self.max_len).fill_(self.pad_id).to(self.device)
