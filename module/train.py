@@ -24,7 +24,6 @@ class Trainer:
         self.train_dataloader = train_dataloader
         self.valid_dataloader = valid_dataloader
 
-
         self.optimizer = optim.AdamW(self.model.parameters(), lr=config.lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min')
         

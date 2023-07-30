@@ -70,7 +70,10 @@ class SeqGenLSTM(nn.Module):
         super(SeqGenLSTM, self).__init__()
 
         self.device = config.device
+
+        self.pad_id = config.pad_id
         self.vocab_size = config.vocab_size
+        
         self.encoder = Encoder(config)
         self.decoder = Decoder(config)
 
@@ -78,7 +81,7 @@ class SeqGenLSTM(nn.Module):
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
         batch_size, max_len = trg.shape
 
-        outputs = torch.LongTensor(max_len, batch_size, self.vocab_size)
+        outputs = torch.Tensor(max_len, batch_size, self.vocab_size)
         outputs = outputs.fill_(self.pad_id).to(self.device)
 
         dec_input = trg[:, 0]

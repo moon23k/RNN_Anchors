@@ -1,8 +1,8 @@
 import os, re, json, yaml, argparse
 from datasets import load_dataset
-from tokenizers.models import WordLevel
+from tokenizers.models import WordPiece
 from tokenizers import Tokenizer, normalizers
-from tokenizers.trainers import WordLevelTrainer
+from tokenizers.trainers import WordPieceTrainer
 from tokenizers.pre_tokenizers import Whitespace
 from tokenizers.normalizers import NFD, Lowercase, StripAccents
 
@@ -179,10 +179,10 @@ def train_tokenizer(task):
     with open('config.yaml', 'r') as f:
         vocab_config = yaml.load(f, Loader=yaml.FullLoader)['vocab']
 
-    tokenizer = Tokenizer(WordLevel(unk_token="[UNK]"))
+    tokenizer = Tokenizer(WordPiece(unk_token="[UNK]"))
     tokenizer.normalizer = normalizers.Sequence([NFD(), Lowercase(), StripAccents()])
     tokenizer.pre_tokenizer = Whitespace()
-    trainer = WordLevelTrainer(
+    trainer = WordPieceTrainer(
         vocab_size=vocab_config['vocab_size'], 
         special_tokens=[
             vocab_config['pad_token'], 

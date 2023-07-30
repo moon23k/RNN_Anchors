@@ -41,7 +41,7 @@ class Config(object):
         self.model_type = args.model
         self.search_method = args.search
 
-        self.ckpt = f"ckpt/{self.task}/{self.attn_type}.pt"
+        self.ckpt = f"ckpt/{self.task}/{self.model_type}.pt"
         self.tokenizer_path = f'data/{self.task}/tokenizer.json'
         self.bidirectional = True if self.direction == 2 else False
 
@@ -63,8 +63,8 @@ class Config(object):
 
 def load_tokenizer(config):
     assert os.path.exists(config.tokenizer_path)
+    tokenizer = Tokenizer.from_file(config.tokenizer_path)
 
-    tokenizer = Tokenizer.from_file(tokenizer_path)    
     tokenizer.post_processor = TemplateProcessing(
         single=f"{config.bos_token} $A {config.eos_token}",
         special_tokens=[(config.bos_token, config.bos_id), 
