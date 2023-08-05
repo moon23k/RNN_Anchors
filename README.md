@@ -2,9 +2,7 @@
 
 &nbsp; The main objective of this repository is to measure and compare the performance of Sequence to Sequence models utilizing RNN-based networks in three Natural Language Generation tasks. The models include **RNN**, **LSTM**, and **GRU**, while the tasks are **Neural Machine Translation**, **Dialogue Generation**, and **Abstractive Text Summarization**. The overall model architecture has implemented by referring to the famous **Sequence to Sequence** paper, and **WMT14 En-De**, **Daily-Dialogue**, and **Daily-CNN** datasets have used for each task.
 
-
 <br><br>
-
 
 ## RNN Types
 
@@ -42,11 +40,11 @@ The default values for experimental variables are set as follows, and each value
 
 | &emsp; **Vocab Setup**                             | &emsp; **Model Setup**                  | &emsp; **Training Setup**                |
 | :---                                               | :---                                    | :---                                     |
-| **`Vocab Size:`** &hairsp; `30,000`                | **`Input Dimension:`** `30,000`         | **`Epochs:`** `10`                       |
-| **`Tokenizer Type:`** &hairsp; `BPE`               | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `128`, `32(sum)`       |
-| **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &emsp; | **`Embedding Dimension:`** `256` &emsp; | **`Learning Rate:`** `1e-3`              |
+| **`Tokenizer Type:`** &hairsp; `WordPiece`         | **`Input Dimension:`** `30,000`         | **`Epochs:`** `10`                       |
+| **`Vocab Size:`** &hairsp; `5,000`                 | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `128`, `32(sum)`       |
+| **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &nbsp; | **`Embedding Dimension:`** `256` &nbsp; | **`Learning Rate:`** `1e-3`              |
 | **`UNK Idx, Token:`** &hairsp; `1`, `[UNK]`        | **`Hidden Dimension:`** `512`           | **`iters_to_accumulate:`** `4`           |
-| **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &emsp; |
+| **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &nbsp; |
 | **`EOS Idx, Token:`** &hairsp; `3`, `[EOS]`        | **`Drop-out Ratio:`** `0.5`             | **`Apply AMP:`** `True`                  |
 
 <br><br>
@@ -54,27 +52,37 @@ The default values for experimental variables are set as follows, and each value
 
 ## Results
 
+| Metric Score | &emsp; RNN Model &emsp; | &emsp; LSTM Model &emsp; | &emsp; GRU Model &emsp; |
+|---|:---:|:---:|:---:|
+| &nbsp; BLEU Greedy Score                   | - | - | - |
+| &nbsp; BLEU Beam Score                     | - | - | - |
+| &nbsp; BERT Similarity Greedy Score &nbsp; | - | - | - |
+| &nbsp; BERT Similarity Beam Score          | - | - | - |
+| &nbsp; ROUGE Greedy Score                  | - | - | - |
+| &nbsp; ROUGE Greedy Score                  | - | - | - |
+
 <br><br>
 
 
 ## How to Use
-**Clone git repo**
+> **Clone git repo**
 ```
 git clone https://github.com/moon23k/RNN_Anchors
 ```
-
 <br>
 
-**Download and Process Dataset**
+> **Download and Process Dataset**
 ```
 bash setup.py -task [all, nmt, dialog, sum]
 ```
-
 <br>
 
-**Execute the run file**
+> **Execute the run file**
 ```
-python3 run.py -task [nmt, dialog, sum] -mode [train, test, inference] -model [rnn, lstm, gru] -search(optional) [greedy, beam]
+python3 run.py -task [nmt, dialog, sum]
+               -mode [train, test, inference]
+               -model [rnn, lstm, gru]
+               -search(optional) [greedy, beam]
 ```
 <br><br>
 
