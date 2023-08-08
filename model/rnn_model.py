@@ -64,9 +64,9 @@ class Decoder(nn.Module):
 
 
 
-class SeqGenRNN(nn.Module):
+class RnnModel(nn.Module):
     def __init__(self, config):
-        super(SeqGenRNN, self).__init__()
+        super(RnnModel, self).__init__()
 
         self.device = config.device
         

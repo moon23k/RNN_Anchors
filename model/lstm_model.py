@@ -65,9 +65,9 @@ class Decoder(nn.Module):
 
 
 
-class SeqGenLSTM(nn.Module):
+class LstmModel(nn.Module):
     def __init__(self, config):
-        super(SeqGenLSTM, self).__init__()
+        super(LstmModel, self).__init__()
 
         self.device = config.device
 

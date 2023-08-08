@@ -22,9 +22,10 @@ class Tester:
             self.metric_module = evaluate.load('bleu')
 
         elif self.task == 'dialog':
-            self.metric_name = 'Similarity'
-            self.metric_tokenizer = BertTokenizerFast.from_pretrained('bert-base-uncased')
-            self.metric_model = BertModel.from_pretrained('bert-base-uncased')
+            mname = "bert-base-uncased"
+            self.metric_name = 'BERT'
+            self.metric_tokenizer = BertTokenizerFast.from_pretrained(mname)
+            self.metric_model = BertModel.from_pretrained(mname)
             self.metric_model.eval()
 
         elif self.task == 'sum':
@@ -34,7 +35,7 @@ class Tester:
 
 
     def test(self):
-        greedy_score, beam_score = 0, 0
+        greedy_score, beam_score = 0.0, 0.0
 
         with torch.no_grad():
 
@@ -87,7 +88,10 @@ class Tester:
             
             bert_out = self.metric_model(**encoding)[0]
 
-            normalized = torch.nn.functional.normalize(bert_out[:, 0, :], p=2, dim=-1)
+            normalized = torch.nn.functional.normalize(
+                bert_out[:, 0, :], p=2, dim=-1
+            )
+            
             dist = normalized.matmul(normalized.T)
             sim_matrix = dist.new_ones(dist.shape) - dist
             score = sim_matrix[0, 1].item()

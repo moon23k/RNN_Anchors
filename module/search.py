@@ -21,7 +21,10 @@ class Search:
         self.eos_id = config.eos_id
         self.pad_id = config.pad_id
 
-        self.Node = namedtuple('Node', ['prev_node', 'pred', 'log_prob', 'hiddens', 'length'])
+        self.Node = namedtuple(
+            'Node', 
+            ['prev_node', 'pred', 'log_prob', 'hiddens', 'length']
+            )
 
 
     def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2): 

@@ -65,9 +65,9 @@ class Decoder(nn.Module):
 
 
 
-class SeqGenGRU(nn.Module):
+class GruModel(nn.Module):
     def __init__(self, config):
-        super(SeqGenGRU, self).__init__()
+        super(GruModel, self).__init__()
 
         self.device = config.device
 

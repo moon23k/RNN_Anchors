@@ -41,7 +41,11 @@ class Collator(object):
 
 
     def pad_batch(self, batch):
-        return pad_sequence(batch, batch_first=True, padding_value=self.pad_id)
+        return pad_sequence(
+            batch, 
+            batch_first=True, 
+            padding_value=self.pad_id
+        )
 
 
 

@@ -1,8 +1,6 @@
 import os, torch
 import torch.nn as nn
-from model.rnn_model import SeqGenRNN
-from model.lstm_model import SeqGenLSTM
-from model.gru_model import SeqGenGRU
+from model import RnnModel, LstmModel, GruModel
 
 
 
@@ -33,11 +31,11 @@ def print_model_desc(model):
 
 def load_model(config):
     if config.model_type == 'rnn':
-        model = SeqGenRNN(config)
+        model = RnnModel(config)
     elif config.model_type == 'lstm':
-        model = SeqGenLSTM(config)
+        model = LstmModel(config)
     elif config.model_type == 'gru':
-        model = SeqGenGRU(config)        
+        model = GruModel(config)        
     
     init_weights(model)
     print(f"Initialized model for {config.task} task has loaded")
