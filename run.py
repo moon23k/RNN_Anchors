@@ -50,10 +50,10 @@ class Config(object):
             self.batch_size = self.batch_size // 4
 
         use_cuda = torch.cuda.is_available()
-        self.device_type = 'cuda' if use_cuda else 'cpu'
-        self.device = torch.device(self.device_type) \
-                      if self.task == 'inference' \
-                      else torch.device('cpu')
+        self.device_type = 'cuda' \
+                           if use_cuda and self.mode != 'inference' \
+                           else 'cpu'
+        self.device = torch.device(self.device_type)
 
 
     def print_attr(self):
@@ -76,10 +76,7 @@ def load_tokenizer(config):
 
 
 
-def inference(config, model, tokenizer):
-    if config.search_method == 'beam':
-        beam = Search(config, model)
-    search_module = Search(config, model)
+def inference(config, generator):
 
     print(f'--- Inference Process Started! ---')
     print('[ Type "quit" on user input to stop the Process ]')
@@ -87,21 +84,13 @@ def inference(config, model, tokenizer):
     while True:
         input_seq = input('\nUser Input Sequence >> ').lower()
 
-        #Enc Condition
+        #End Condition
         if input_seq == 'quit':
-            print('\n--- Inference Process has Terminated! ---')
+            print('\n--- Inference Process has terminated! ---')
             break        
 
-        input_tensor = torch.LongTensor(tokenizer.encode(input_seq)).unsqueeze(0)
-
-
-        if config.search_method == 'greedy':
-            pred_tensor = search_module.greedy_search(input_tensor)
-        elif config.search_method == 'beam':
-            pred_tensor = search_module.beam_search(input_tensor)
-
-        pred_seq = tokenizer.decode(pred_tensor)
-        print(f"Model Out Sequence >> {tokenizer.decode(pred_seq)}")
+        output_seq = generator.generate(input_seq, search=config.search)
+        print(f"Model Out Sequence >> {output_seq}")       
 
 
 
@@ -110,6 +99,9 @@ def main(args):
     config = Config(args)
     model = load_model(config)
     tokenizer = load_tokenizer(config)
+    generator = Generator(config, model, tokenizer) \
+                if config.mode != 'train' else None
+
 
     if config.mode == 'train':
         train_dataloader = load_dataloader(config, tokenizer, 'train')
@@ -117,13 +109,15 @@ def main(args):
         trainer = Trainer(config, model, train_dataloader, valid_dataloader)
         trainer.train()
     
+
     elif config.mode == 'test':
         test_dataloader = load_dataloader(config, tokenizer, 'test')
-        tester = Tester(config, model, tokenizer, test_dataloader)
+        tester = Tester(config, model, generator, test_dataloader)
         tester.test()
     
+
     elif config.mode == 'inference':
-        inference(model, tokenizer)
+        inference(generator)
         
     
 

@@ -6,11 +6,12 @@ from collections import namedtuple
 
 
 
-class Search:
-    def __init__(self, config, model):
-        super(Search, self).__init__()
+class Generator:
+    def __init__(self, config, model, tokenizer):
+        super(Generator, self).__init__()
         
         self.model = model
+        self.tokenizer = tokenizer
         self.device = config.device
         self.model_type = config.model_type
         
