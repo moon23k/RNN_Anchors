@@ -42,9 +42,18 @@ class Config(object):
         self.model_type = args.model
         self.search_method = args.search
 
+        self.bidirectional = True if self.direction == 2 else False
+        self.kwargs = {
+            "input_size": self.emb_dim,
+            "hidden_size": self.hidden_dim,
+            "num_layers": self.num_layers,
+            "batch_first": True,
+            "dropout": self.dropout_ratio,
+            "bidirectional": self.bidirectional
+        }
+
         self.ckpt = f"ckpt/{self.task}/{self.model_type}.pt"
         self.tokenizer_path = f'data/{self.task}/tokenizer.json'
-        self.bidirectional = True if self.direction == 2 else False
 
         if self.task == 'sum':
             self.batch_size = self.batch_size // 4

@@ -1,3 +1,1 @@
-from .rnn_model import RnnModel
-from .lstm_model import Lstmmodel
-from .gru_model import Grumodel
+from .seq2seq import Seq2Seq

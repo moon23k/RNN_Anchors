@@ -1,6 +1,6 @@
 import os, torch
 import torch.nn as nn
-from model import RnnModel, LstmModel, GruModel
+from model import Seq2Seq
 
 
 
@@ -30,13 +30,7 @@ def print_model_desc(model):
 
 
 def load_model(config):
-    if config.model_type == 'rnn':
-        model = RnnModel(config)
-    elif config.model_type == 'lstm':
-        model = LstmModel(config)
-    elif config.model_type == 'gru':
-        model = GruModel(config)        
-    
+    model = Seq2Seq(config)
     init_weights(model)
     print(f"Initialized model for {config.task} task has loaded")
 

@@ -138,7 +138,7 @@ class Generator:
             pred = top_node.pred.squeeze()[1:]
             batch_pred.append(pred.tolist())
 
-        return batch_pred
+        return self.tokenizer.decode(batch_pred)
     
 
     def greedy_search(self, input_tensor):
@@ -166,4 +166,4 @@ class Generator:
                     break
             batch_pred.append(pred[1:].tolist())
 
-        return batch_pred
+        return self.tokenizer.decode(batch_pred)

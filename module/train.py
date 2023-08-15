@@ -1,7 +1,6 @@
 import time, math, json, torch
 import torch.nn as nn
 import torch.amp as amp
-import torch.optim as optim
 from optim import AdamW
 from optim.lr_scheduler import ReduceLROnPlateau
 
@@ -10,31 +9,26 @@ from optim.lr_scheduler import ReduceLROnPlateau
 class Trainer:
     def __init__(self, config, model, train_dataloader, valid_dataloader):
         super(Trainer, self).__init__()
+
         self.model = model
+        self.train_dataloader = train_dataloader
+        self.valid_dataloader = valid_dataloader
+
         self.clip = config.clip
         self.device = config.device
         self.n_epochs = config.n_epochs
         self.vocab_size = config.vocab_size
         self.early_stop = config.early_stop
         self.patience = config.patience
-
         self.device_type = config.device_type
         self.scaler = torch.cuda.amp.GradScaler()
         self.iters_to_accumulate = config.iters_to_accumulate        
 
-        self.train_dataloader = train_dataloader
-        self.valid_dataloader = valid_dataloader
-
         self.optimizer = AdamW(self.model.parameters(), lr=config.lr)
         self.scheduler = ReduceLROnPlateau(self.optimizer, 'min')
-        
-        self.criterion = nn.CrossEntropyLoss(
-            ignore_index=config.pad_id, 
-            label_smoothing=0.1
-        ).to(self.device)
 
         self.ckpt = config.ckpt
-        self.record_path = f"ckpt/{config.task}/{config.model_type}.json"
+        self.record_path = self.ckpt.replace('.pt', '.json')
         self.record_keys = ['epoch', 'train_loss', 'train_ppl',
                             'valid_loss', 'valid_ppl', 
                             'learning_rate', 'train_time']
@@ -115,14 +109,9 @@ class Trainer:
             trg = batch['trg'].to(self.device)
 
             with torch.autocast(device_type=self.device_type, dtype=torch.float16):
-                logit = self.model(src, trg)
-                
-                loss = self.criterion(
-                    logit.contiguous().view(-1, self.vocab_size),
-                    trg[:, 1:].contiguous().view(-1)
-                )
-
+                loss = self.model(src, trg).loss
                 loss = loss / self.iters_to_accumulate
+                
             #Backward Loss
             self.scaler.scale(loss).backward()        
             
