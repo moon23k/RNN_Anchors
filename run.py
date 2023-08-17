@@ -8,7 +8,7 @@ from module import (
     load_model,
     Trainer,
     Tester,
-    Search
+    Generator
     )
 
 
@@ -46,7 +46,7 @@ class Config(object):
         self.kwargs = {
             "input_size": self.emb_dim,
             "hidden_size": self.hidden_dim,
-            "num_layers": self.num_layers,
+            "num_layers": self.n_layers,
             "batch_first": True,
             "dropout": self.dropout_ratio,
             "bidirectional": self.bidirectional
@@ -85,31 +85,11 @@ def load_tokenizer(config):
 
 
 
-def inference(config, generator):
-
-    print(f'--- Inference Process Started! ---')
-    print('[ Type "quit" on user input to stop the Process ]')
-    
-    while True:
-        input_seq = input('\nUser Input Sequence >> ').lower()
-
-        #End Condition
-        if input_seq == 'quit':
-            print('\n--- Inference Process has terminated! ---')
-            break        
-
-        output_seq = generator.generate(input_seq, search=config.search)
-        print(f"Model Out Sequence >> {output_seq}")       
-
-
-
 def main(args):
     set_seed()
     config = Config(args)
     model = load_model(config)
     tokenizer = load_tokenizer(config)
-    generator = Generator(config, model, tokenizer) \
-                if config.mode != 'train' else None
 
 
     if config.mode == 'train':
@@ -121,12 +101,13 @@ def main(args):
 
     elif config.mode == 'test':
         test_dataloader = load_dataloader(config, tokenizer, 'test')
-        tester = Tester(config, model, generator, test_dataloader)
+        tester = Tester(config, model, tokenizer, test_dataloader)
         tester.test()
     
 
     elif config.mode == 'inference':
-        inference(generator)
+        generator = Generator(config, model, tokenizer)
+        generator.inference()
         
     
 

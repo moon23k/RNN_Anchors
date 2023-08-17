@@ -14,11 +14,11 @@ class Encoder(nn.Module):
         )
         self.dropout = nn.Dropout(config.dropout_ratio)
 
-        if self.model_type == 'rnn':
+        if config.model_type == 'rnn':
             self.net = nn.RNN(**config.kwargs)
-        elif self.model_type == 'lstm':
+        elif config.model_type == 'lstm':
             self.net = nn.LSTM(**config.kwargs)
-        elif self.model_type == 'gru':
+        elif config.model_type == 'gru':
             self.net = nn.GRU(**config.kwargs)
 
 
@@ -40,11 +40,11 @@ class Decoder(nn.Module):
 
         self.dropout = nn.Dropout(config.dropout_ratio)
         
-        if self.model_type == 'rnn':
+        if config.model_type == 'rnn':
             self.net = nn.RNN(**config.kwargs)
-        elif self.model_type == 'lstm':
+        elif config.model_type == 'lstm':
             self.net = nn.LSTM(**config.kwargs)
-        elif self.model_type == 'gru':
+        elif config.model_type == 'gru':
             self.net = nn.GRU(**config.kwargs)
     
         self.fc_out = nn.Linear(
@@ -67,7 +67,6 @@ class Seq2Seq(nn.Module):
         super(Seq2Seq, self).__init__()
 
         self.device = config.device
-        
         self.pad_id = config.pad_id
         self.vocab_size = config.vocab_size
         

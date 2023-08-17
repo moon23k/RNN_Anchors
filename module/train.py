@@ -1,8 +1,8 @@
 import time, math, json, torch
 import torch.nn as nn
 import torch.amp as amp
-from optim import AdamW
-from optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim import AdamW
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 
 
@@ -100,16 +100,15 @@ class Trainer:
 
 
     def train_epoch(self):
-        self.model.train()
         epoch_loss = 0
-        tot_len = len(self.train_dataloader)
+        self.model.train()
 
         for idx, batch in enumerate(self.train_dataloader):
             src = batch['src'].to(self.device)
             trg = batch['trg'].to(self.device)
 
             with torch.autocast(device_type=self.device_type, dtype=torch.float16):
-                loss = self.model(src, trg).loss
+                loss = self.model(src, trg, teacher_forcing_ratio=0.5).loss
                 loss = loss / self.iters_to_accumulate
                 
             #Backward Loss
@@ -131,30 +130,26 @@ class Trainer:
 
             epoch_loss += loss.item()
         
-        epoch_loss = round(epoch_loss / tot_len, 3)
+        epoch_loss = round(epoch_loss / len(self.train_dataloader), 3)
         epoch_ppl = round(math.exp(epoch_loss), 3)    
         return epoch_loss, epoch_ppl
     
 
     def valid_epoch(self):
-        self.model.eval()
         epoch_loss = 0
-        tot_len = len(self.valid_dataloader)
-        
+        self.model.eval()
+
         with torch.no_grad():
-            for _, batch in enumerate(self.valid_dataloader):
+            for batch in self.valid_dataloader:
                 src = batch['src'].to(self.device)
                 trg = batch['trg'].to(self.device)
                 
-                logit = self.model(src, trg, teacher_forcing_ratio=0.0)
-                
-                loss = self.criterion(
-                    logit.contiguous().view(-1, self.vocab_size),
-                    trg[:, 1:].contiguous().view(-1)
-                )
-
+                with torch.autocast(device_type=self.device_type, dtype=torch.float16):
+                    loss = self.model(src, trg, teacher_forcing_ratio=0.0).loss
+    
                 epoch_loss += loss.item()
         
-        epoch_loss = round(epoch_loss / tot_len, 3)
-        epoch_ppl = round(math.exp(epoch_loss), 3)        
+        epoch_loss = round(epoch_loss / len(self.valid_dataloader), 3)
+        epoch_ppl = round(math.exp(epoch_loss), 3)
+
         return epoch_loss, epoch_ppl
