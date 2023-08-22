@@ -27,3 +27,4 @@ train:
     patience: 3
     clip: 1
     iters_to_accumulate: 4
+    teacher_forcing_ratio: 0.5

@@ -12,8 +12,10 @@ class Tester:
 
         self.task = config.task
         self.device = config.device
+        self.bos_id = config.bos_id
         self.pad_id = config.pad_id
         self.max_len = config.max_len
+        self.vocab_size = config.vocab_size
         self.model_type = config.model_type
         
         self.metric_name = 'BLEU' if self.task == 'nmt' else 'ROUGE'
@@ -46,28 +48,21 @@ class Tester:
     def predict(self, x):
         batch_size = x.size(0)
         
-        outputs = torch.Tensor(self.max_len, batch_size, self.vocab_size)
-        outputs = outputs.fill_(self.pad_id).to(self.device)
-        outputs[0, :] = self.bos_id
+        output = torch.LongTensor(self.max_len, batch_size, self.vocab_size)
+        output = output.fill_(self.pad_id).to(self.device)
+        output[0, :] = self.bos_id
 
-        hiddens = self.encoder(x)
-        dec_input = outputs[0, :]
+        pred = output[0, :]
+        hiddens = self.model.encoder(x)
 
         for t in range(1, self.max_len):
-            out, hiddens = self.decoder(dec_input, hiddens)
-            outputs[t] = out
+            out, hiddens = self.model.decoder(pred, hiddens)
+            output[t] = out
             pred = out.argmax(-1)
-            outputs[:, t] = pred
 
-        logit = outputs.contiguous().permute(1, 0, 2)[:, 1:] 
+        logit = output.contiguous().permute(1, 0, 2)[:, 1:] 
         
-        self.out.logit = logit
-        self.out.loss = self.criterion(
-            logit.contiguous().view(-1, self.vocab_size), 
-            trg[:, 1:].contiguous().view(-1)
-        )
-        
-        return self.out 
+        return output
 
 
     def evaluate(self, pred, label):

@@ -57,8 +57,8 @@ class Decoder(nn.Module):
     def forward(self, x, hiddens):
         x = self.dropout(self.embedding(x.unsqueeze(1)))
         out, hiddens = self.net(x, hiddens)
-        out = self.fc_out(out.squeeze(1))
-        return out, hiddens
+        out = self.fc_out(out)
+        return out.squeeze(1), hiddens
 
 
 
@@ -81,9 +81,10 @@ class Seq2Seq(nn.Module):
 
     
     def forward(self, src, trg, teacher_forcing_ratio=0.5):
+        
         batch_size, max_len = trg.shape
         
-        outputs = torch.Tensor(max_len, batch_size, self.vocab_size)
+        outputs = torch.Tensor(batch_size, max_len, self.vocab_size)
         outputs = outputs.fill_(self.pad_id).to(self.device)
 
         dec_input = trg[:, 0]
@@ -91,12 +92,12 @@ class Seq2Seq(nn.Module):
 
         for t in range(1, max_len):
             out, hiddens = self.decoder(dec_input, hiddens)
-            outputs[t] = out
+            outputs[:, t] = out
             pred = out.argmax(-1)
             teacher_force = random.random() < teacher_forcing_ratio
             dec_input = trg[:, t] if teacher_force else pred
 
-        logit = outputs.contiguous().permute(1, 0, 2)[:, 1:] 
+        logit = outputs[:, 1:] 
         
         self.out.logit = logit
         self.out.loss = self.criterion(
