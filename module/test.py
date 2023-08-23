@@ -34,6 +34,8 @@ class Tester:
                 y = self.tokenize(batch['trg'])            
         
                 pred = self.predict(x)
+                pred = self.tokenize(pred)
+
                 score += self.evaluate(pred, y)
 
         txt = f"TEST Result on {self.task.upper()} with {self.model_type.upper()} model"
@@ -48,21 +50,19 @@ class Tester:
     def predict(self, x):
         batch_size = x.size(0)
         
-        output = torch.LongTensor(self.max_len, batch_size, self.vocab_size)
-        output = output.fill_(self.pad_id).to(self.device)
-        output[0, :] = self.bos_id
+        pred = torch.LongTensor(batch_size, self.max_len)
+        pred = pred.fill_(self.pad_id).to(self.device)
+        pred[:, 0] = self.bos_id
 
-        pred = output[0, :]
+        pred_token = torch.LongTensor(batch_size).fill_(self.bos_id).to(self.device)
         hiddens = self.model.encoder(x)
 
         for t in range(1, self.max_len):
-            out, hiddens = self.model.decoder(pred, hiddens)
-            output[t] = out
-            pred = out.argmax(-1)
-
-        logit = output.contiguous().permute(1, 0, 2)[:, 1:] 
+            out, hiddens = self.model.decoder(pred_token, hiddens)
+            pred_token = out.argmax(-1)
+            pred[:, t] = pred_token
         
-        return output
+        return pred
 
 
     def evaluate(self, pred, label):
