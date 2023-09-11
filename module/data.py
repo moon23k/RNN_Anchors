@@ -24,9 +24,9 @@ class Dataset(torch.utils.data.Dataset):
     
 
     def __getitem__(self, idx):
-        src = self.tokenizer.encode(self.data[idx]['src']).ids
-        trg = self.tokenizer.encode(self.data[idx]['trg']).ids
-        return torch.LongTensor(src), torch.LongTensor(trg)
+        x = self.tokenizer.encode(self.data[idx]['src']).ids
+        y = self.tokenizer.encode(self.data[idx]['trg']).ids
+        return torch.LongTensor(x), torch.LongTensor(y)
 
 
 
@@ -37,12 +37,10 @@ class Collator(object):
 
 
     def __call__(self, batch):
-        src_batch, trg_batch = zip(*batch)        
-        src_batch = self.pad_batch(src_batch)
-        trg_batch = self.pad_batch(trg_batch)
+        x_batch, y_batch = zip(*batch)
         
-        return {'src': src_batch, 
-                'trg': trg_batch}
+        return {'src': self.pad_batch(x_batch), 
+                'trg': self.pad_batch(y_batch)}
 
 
     def pad_batch(self, batch):

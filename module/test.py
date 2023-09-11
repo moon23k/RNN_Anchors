@@ -1,4 +1,4 @@
-import math, torch, evaluate
+import torch, evaluate
 
 
 
@@ -30,8 +30,8 @@ class Tester:
         with torch.no_grad():
             for batch in self.dataloader:
 
-                x = batch['src'].to(self.device)
-                y = self.tokenize(batch['trg'])            
+                x = batch['x'].to(self.device)
+                y = self.tokenize(batch['y'])            
         
                 pred = self.predict(x)
                 pred = self.tokenize(pred)

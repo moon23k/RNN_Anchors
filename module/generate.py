@@ -23,9 +23,39 @@ class Generator:
         self.pad_id = config.pad_id
 
         self.Node = namedtuple(
-            'Node', 
-            ['prev_node', 'pred', 'log_prob', 'hiddens', 'length']
+            'Node', ['prev_node', 'pred', 'log_prob', 'hiddens', 'length']
             )
+
+
+    def inference(self):
+        print(f'--- Inference Process Started! ---')
+        print('[ Type "quit" on user input to stop the Process ]')
+        
+        while True:
+            input_seq = input('\nUser Input Sequence >> ').lower()
+
+            #End Condition
+            if input_seq == 'quit':
+                print('\n--- Inference Process has terminated! ---')
+                break        
+
+            output_seq = self.generate(input_seq)
+            print(f"Model Out Sequence >> {output_seq}")      
+
+
+    def generate(self, input_seq, search_method):
+        
+        input_tensor = self.tokenizer.encode(input_tensor).ids    
+        input_tensor = torch.LongTensor([input_tensor]).to(self.device)
+
+        with torch.no_grad():
+            if self.search_method == 'greedy':
+                generated_ids = self.greedy_search(input_tensor)
+            elif self.search_method == 'beam':
+                generated_ids = self.beam_search(input_tensor)
+        
+        return self.tokenizer.decode(generated_ids)
+
 
 
     def get_score(self, node, max_repeat=5, min_length=5, alpha=1.2): 

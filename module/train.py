@@ -27,7 +27,7 @@ class Trainer:
         self.iters_to_accumulate = config.iters_to_accumulate        
 
         self.optimizer = AdamW(self.model.parameters(), lr=config.lr)
-        self.scheduler = ReduceLROnPlateau(self.optimizer, 'min')
+        self.lr_scheduler = ReduceLROnPlateau(self.optimizer, patience=2)
 
         self.ckpt = config.ckpt
         self.record_path = self.ckpt.replace('.pt', '.json')
@@ -72,7 +72,7 @@ class Trainer:
             self.print_epoch(record_dict)
             
             val_loss = record_dict['valid_loss']
-            self.scheduler.step(val_loss)
+            self.lr_scheduler.step(val_loss)
 
             #save best model
             if best_loss > val_loss:
@@ -106,8 +106,8 @@ class Trainer:
         self.model.train()
 
         for idx, batch in enumerate(self.train_dataloader):
-            x = batch['src'].to(self.device)
-            y = batch['trg'].to(self.device)
+            x = batch['x'].to(self.device)
+            y = batch['y'].to(self.device)
 
             with torch.autocast(device_type=self.device_type, dtype=torch.float16):
                 loss = self.model(x, y, teacher_forcing_ratio=0.5).loss
@@ -143,8 +143,8 @@ class Trainer:
 
         with torch.no_grad():
             for batch in self.valid_dataloader:
-                x = batch['src'].to(self.device)
-                y = batch['trg'].to(self.device)
+                x = batch['x'].to(self.device)
+                y = batch['y'].to(self.device)
                 
                 with torch.autocast(device_type=self.device_type, dtype=torch.float16):
                     loss = self.model(x, y, teacher_forcing_ratio=0.0).loss
