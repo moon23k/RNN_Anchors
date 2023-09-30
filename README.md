@@ -1,4 +1,4 @@
-## RNN Anchors 
+## RNN Sequence to Sequence 
 
 &nbsp; The main objective of this repository is to measure and compare the performance of Sequence to Sequence models utilizing RNN-based networks in three Natural Language Generation tasks. The models include **RNN**, **LSTM**, and **GRU**, while the tasks are **Neural Machine Translation**, **Dialogue Generation**, and **Abstractive Text Summarization**. The overall model architecture has implemented by referring to the famous **Sequence to Sequence** paper, and **WMT14 En-De**, **Daily-Dialogue**, and **Daily-CNN** datasets have used for each task.
 
@@ -40,8 +40,8 @@ The default values for experimental variables are set as follows, and each value
 
 | &emsp; **Vocab Setup**                             | &emsp; **Model Setup**                  | &emsp; **Training Setup**                |
 | :---                                               | :---                                    | :---                                     |
-| **`Tokenizer Type:`** &hairsp; `WordPiece`         | **`Input Dimension:`** `30,000`         | **`Epochs:`** `10`                       |
-| **`Vocab Size:`** &hairsp; `5,000`                 | **`Output Dimension:`** `30,000`        | **`Batch Size:`** `128`, `32(sum)`       |
+| **`Tokenizer Type:`** &hairsp; `BPE`               | **`Input Dimension:`** `15,000`         | **`Epochs:`** `10`                       |
+| **`Vocab Size:`** &hairsp; `15,000`                | **`Output Dimension:`** `15,000`        | **`Batch Size:`** `128`, `32(Sum)`       |
 | **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &nbsp; | **`Embedding Dimension:`** `256` &nbsp; | **`Learning Rate:`** `1e-3`              |
 | **`UNK Idx, Token:`** &hairsp; `1`, `[UNK]`        | **`Hidden Dimension:`** `512`           | **`iters_to_accumulate:`** `4`           |
 | **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &nbsp; |
@@ -54,12 +54,9 @@ The default values for experimental variables are set as follows, and each value
 
 | Metric Score | &emsp; RNN Model &emsp; | &emsp; LSTM Model &emsp; | &emsp; GRU Model &emsp; |
 |---|:---:|:---:|:---:|
-| &nbsp; BLEU Greedy Score                   | - | - | - |
-| &nbsp; BLEU Beam Score                     | - | - | - |
-| &nbsp; BERT Similarity Greedy Score &nbsp; | - | - | - |
-| &nbsp; BERT Similarity Beam Score          | - | - | - |
-| &nbsp; ROUGE Greedy Score                  | - | - | - |
-| &nbsp; ROUGE Greedy Score                  | - | - | - |
+| &nbsp; Machine Translation &nbsp; | - | - | - |
+| &nbsp; Dialogue Generation        | - | - | - |
+| &nbsp; Text Summarization         | - | - | - |
 
 <br><br>
 
@@ -91,4 +88,3 @@ python3 run.py -task [nmt, dialog, sum]
 * [LONG SHORT-TERM MEMORY](https://www.bioinf.jku.at/publications/older/2604.pdf)
 * [Empirical Evaluation of Gated Recurrent Neural Networks on Sequence Modeling](https://arxiv.org/pdf/1412.3555.pdf)
 
-<br>
