@@ -52,11 +52,11 @@ The default values for experimental variables are set as follows, and each value
 
 ## Results
 
-| Metric Score | &emsp; RNN Model &emsp; | &emsp; LSTM Model &emsp; | &emsp; GRU Model &emsp; |
+|  | &emsp; Machine Translation &emsp; | &emsp; Dialogue Generation &emsp; | &emsp; Text Summarization &emsp; |
 |---|:---:|:---:|:---:|
-| &nbsp; Machine Translation &nbsp; | - | - | - |
-| &nbsp; Dialogue Generation        | - | - | - |
-| &nbsp; Text Summarization         | - | - | - |
+| &nbsp; **RNN Model**         | 1.11  | 0.75 | - |
+| &nbsp; **LSTM Model** &nbsp; | 8.76  | 0.45 | - |
+| &nbsp; **GRU Model**         | 11.96 | 1.25 | - |
 
 <br><br>
 
