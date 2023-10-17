@@ -120,9 +120,11 @@ if __name__ == '__main__':
     parser.add_argument('-search', default='greedy', required=False)
     
     args = parser.parse_args()
-    assert args.task in ['nmt', 'dialog', 'sum']
+    assert args.task in ['translation', 'dialogue', 'summarization']
     assert args.mode in ['train', 'test', 'inference']
     assert args.model in ['rnn', 'lstm', 'gru']
     assert args.search in ['greedy', 'beam']
+
+    os.makedirs(f'data/{args.task}', exist_ok=True)
 
     main(args)
