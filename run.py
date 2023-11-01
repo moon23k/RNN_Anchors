@@ -9,7 +9,7 @@ from module import (
     Trainer,
     Tester,
     Generator
-    )
+)
 
 
 
@@ -125,6 +125,6 @@ if __name__ == '__main__':
     assert args.model in ['rnn', 'lstm', 'gru']
     assert args.search in ['greedy', 'beam']
 
-    os.makedirs(f'data/{args.task}', exist_ok=True)
+    os.makedirs(f'ckpt/{args.task}', exist_ok=True)
 
     main(args)
