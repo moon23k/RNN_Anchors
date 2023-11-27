@@ -46,13 +46,12 @@ class Config(object):
         self.kwargs = {
             "input_size": self.emb_dim,
             "hidden_size": self.hidden_dim,
-            "num_layers": self.n_layers,
             "batch_first": True,
             "dropout": self.dropout_ratio,
             "bidirectional": self.bidirectional
         }
 
-        self.ckpt = f"ckpt/{self.task}/{self.model_type}.pt"
+        self.ckpt = f"ckpt/{self.task}/{self.model_type}_model.pt"
         self.tokenizer_path = f'data/{self.task}/tokenizer.json'
 
         if self.task == 'sum':

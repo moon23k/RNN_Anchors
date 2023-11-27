@@ -74,10 +74,7 @@ class Seq2Seq(nn.Module):
         self.decoder = Decoder(config)
 
         self.out = namedtuple('Out', 'logit loss')
-        self.criterion = nn.CrossEntropyLoss(
-            ignore_index=self.pad_id, 
-            label_smoothing=0.1
-        ).to(self.device)
+        self.criterion = nn.CrossEntropyLoss().to(self.device)
 
     
     def forward(self, x, y, teacher_forcing_ratio=0.5):

@@ -1,5 +1,5 @@
 vocab:
-    vocab_size: 15000
+    vocab_size: 10000
     pad_id: 0
     unk_id: 1
     bos_id: 2
@@ -11,7 +11,6 @@ vocab:
 
 
 model:
-    n_layers: 2
     direction: 2
     emb_dim: 256
     hidden_dim: 512
@@ -22,7 +21,7 @@ model:
 train:
     n_epochs: 10
     batch_size: 32
-    lr: 0.001
+    lr: 0.0005
     early_stop: 1
     patience: 3
     clip: 1
