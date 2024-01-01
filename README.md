@@ -40,8 +40,8 @@ The default values for experimental variables are set as follows, and each value
 
 | &emsp; **Vocab Setup**                             | &emsp; **Model Setup**                  | &emsp; **Training Setup**                |
 | :---                                               | :---                                    | :---                                     |
-| **`Tokenizer Type:`** &hairsp; `BPE`               | **`Input Dimension:`** `15,000`         | **`Epochs:`** `10`                       |
-| **`Vocab Size:`** &hairsp; `15,000`                | **`Output Dimension:`** `15,000`        | **`Batch Size:`** `128`, `32(Sum)`       |
+| **`Tokenizer Type:`** &hairsp; `Word Level`        | **`Input Dimension:`** `15,000`         | **`Epochs:`** `10`                       |
+| **`Vocab Size:`** &hairsp; `10,000`                | **`Output Dimension:`** `15,000`        | **`Batch Size:`** `32`                   |
 | **`PAD Idx, Token:`** &hairsp; `0`, `[PAD]` &nbsp; | **`Embedding Dimension:`** `256` &nbsp; | **`Learning Rate:`** `1e-3`              |
 | **`UNK Idx, Token:`** &hairsp; `1`, `[UNK]`        | **`Hidden Dimension:`** `512`           | **`iters_to_accumulate:`** `4`           |
 | **`BOS Idx, Token:`** &hairsp; `2`, `[BOS]`        | **`N Layers:`** `2`                     | **`Gradient Clip Max Norm:`** `1` &nbsp; |
@@ -54,9 +54,9 @@ The default values for experimental variables are set as follows, and each value
 
 |  | &emsp; Machine Translation &emsp; | &emsp; Dialogue Generation &emsp; | &emsp; Text Summarization &emsp; |
 |---|:---:|:---:|:---:|
-| &nbsp; **RNN Model**         | 1.11  | 0.75 | - |
-| &nbsp; **LSTM Model** &nbsp; | 8.76  | 0.45 | - |
-| &nbsp; **GRU Model**         | 11.96 | 1.25 | - |
+| &nbsp; **RNN Model**         | 2.12  | 0.10 | 0.00 |
+| &nbsp; **LSTM Model** &nbsp; | 8.35  | 0.37 | 2.23 |
+| &nbsp; **GRU Model**         | 9.75  | 2.16 | 2.19 |
 
 <br><br>
 
